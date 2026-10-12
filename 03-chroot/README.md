@@ -1,0 +1,3 @@
+# 03-chroot
+
+_A completar cuando llegue el teléfono._
