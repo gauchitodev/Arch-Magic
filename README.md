@@ -129,7 +129,11 @@ proot-distro install archlinux
 proot-distro login archlinux
 ```
 
-**Con root (chroot)** — casi nativo, acceso real al hardware. Script de montaje: _a completar_.
+**Con root (chroot)** — casi nativo, acceso real al hardware. Script en [`03-chroot/`](03-chroot/):
+
+```bash
+./arch.sh instalar && ./arch.sh configurar && ./arch.sh entrar gauchito
+```
 
 **Claude Code** (dentro de Arch; requiere plan Pro/Max o cuenta de Console):
 
