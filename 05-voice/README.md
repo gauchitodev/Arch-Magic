@@ -2,7 +2,7 @@
 
 Apretás los dos gatillos, hablás, los volvés a apretar y Claude te contesta en voz alta.
 
-> 🚧 Bosquejo: escrito antes de que llegue el teléfono, sin probar en Android. La parte de Claude está probada con una API falsa en una PC.
+> 🚧 Sin probar en Android. Probado en una PC (13/10) con los comandos de Termux de mentira: grabar → convertir a WAV de 16 kHz mono → transcribir → Claude Code de verdad → hablar, en unos 6 segundos. También la API con respuesta normal, rechazo y error: si algo falla, avisa y no deja el "Pensando…" clavado.
 
 ```
 gatillos → termux-microphone-record → ffmpeg → whisper.cpp → Claude → termux-tts-speak
@@ -66,7 +66,7 @@ El modo `api` usa `claude-opus-5-5` con esfuerzo bajo, para que conteste rápido
 | Variable | Por defecto |
 |---|---|
 | `CLAUDE_MODO` | automático (`api` o `code`) |
-| `CLAUDE_MODELO` | `claude-opus-5-5` |
+| `CLAUDE_MODELO` | `claude-opus-5-5` (`claude-haiku-5-5` contesta más rápido y sale unas 40 veces menos, pero sin reintento automático si rechaza) |
 | `WHISPER_BIN` | `~/whisper.cpp/build/bin/whisper-cli` |
 | `WHISPER_MODELO` | `~/whisper.cpp/models/ggml-base.bin` |
 | `VOZ_IDIOMA` / `VOZ_REGION` | `es` / `UY` |

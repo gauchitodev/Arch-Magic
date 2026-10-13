@@ -28,6 +28,10 @@ ARCH_ZONA="${ARCH_ZONA:-America/Montevideo}"
 COMPARTIDA_ANDROID="${COMPARTIDA_ANDROID:-/sdcard/Arch-Magic}"
 COMPARTIDA_ARCH="/mnt/android"
 
+# Este repo, visto desde adentro de Arch: así Sway y compañía usan los mismos
+# scripts que Termux, sin clonar dos veces.
+REPO_ARCH="/opt/arch-magic"
+
 TERMUX="/data/data/com.termux/files"
 TERMUX_BIN="$TERMUX/usr/bin"
 
@@ -37,6 +41,7 @@ HUELLA_ARCH="/run/arch-magic"
 
 AQUI="$(cd "$(dirname "$0")" && pwd)"
 ESTE="$AQUI/$(basename "$0")"
+REPO="$(dirname "$AQUI")"
 
 # --- Utilidades --------------------------------------------------------------
 
@@ -104,6 +109,10 @@ montar_todo() {
   # Android monta /data con nosuid y nodev: sin esto sudo no funciona.
   mount -o remount,dev,suid /data
 
+  # La raíz montada sobre sí misma: pacman revisa el espacio libre buscando el
+  # punto de montaje de /, y sin esto no lo encuentra (lo mismo hace arch-chroot).
+  montado "$ARCH_RAIZ" || mount --bind "$ARCH_RAIZ" "$ARCH_RAIZ"
+
   montar "$ARCH_RAIZ/proc"     -t proc proc
   montar "$ARCH_RAIZ/sys"      -t sysfs sysfs
   montar "$ARCH_RAIZ/dev"      --bind /dev
@@ -123,6 +132,11 @@ montar_todo() {
 
   mkdir -p "$COMPARTIDA_ANDROID"
   montar "$ARCH_RAIZ$COMPARTIDA_ARCH" --bind "$COMPARTIDA_ANDROID"
+  # El repo es del usuario de Termux. Tu usuario de Arch lo tiene que poder leer
+  # (no escribir): no se le da el mismo número de usuario que a Termux porque
+  # entonces podría meterse en la carpeta del socket de la huella.
+  chmod -R a+rX "$REPO"
+  montar "$ARCH_RAIZ$REPO_ARCH" --bind "$REPO"
 
   # Carpeta del socket de huella.sh. La creamos nosotros (root), pero tiene que
   # ser del usuario de Termux, que es quien pone el socket.
@@ -164,6 +178,13 @@ configurar() {
   '
 
   decir "Llaves de pacman y actualización…"
+  # pacman 7 se encierra con Landlock al descargar. Si el kernel de Android no lo
+  # trae (o no se puede confirmar), pacman falla: en ese caso se apaga el encierro.
+  if ! grep -qs landlock /sys/kernel/security/lsm \
+     && ! grep -q '^DisableSandbox' "$ARCH_RAIZ/etc/pacman.conf"; then
+    avisar "No pude confirmar que el kernel tenga Landlock: pacman va sin sandbox."
+    sed -i '/^\[options\]/a DisableSandbox' "$ARCH_RAIZ/etc/pacman.conf"
+  fi
   en_arch pacman-key --init
   en_arch pacman-key --populate archlinuxarm
   en_arch pacman -Syu --noconfirm
@@ -202,6 +223,7 @@ desmontar() {
   # Orden inverso: primero lo más adentro.
   local destinos=(
     "$ARCH_RAIZ$HUELLA_ARCH"
+    "$ARCH_RAIZ$REPO_ARCH"
     "$ARCH_RAIZ$COMPARTIDA_ARCH"
     "$ARCH_RAIZ/tmp/.X11-unix"
     "$ARCH_RAIZ/tmp"
@@ -210,6 +232,7 @@ desmontar() {
     "$ARCH_RAIZ/dev"
     "$ARCH_RAIZ/sys"
     "$ARCH_RAIZ/proc"
+    "$ARCH_RAIZ"
   )
   local d
   for d in "${destinos[@]}"; do

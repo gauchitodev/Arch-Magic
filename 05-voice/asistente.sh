@@ -117,7 +117,8 @@ preguntar_por_api() {
 # Claude Code adentro de Arch (chroot o proot, lo decide en-arch.sh). La
 # pregunta va por stdin, así no hay que pelear con comillas.
 preguntar_por_code() {
-  printf '%s\n\nPregunta: %s\n' "$SISTEMA" "$1" | "$EN_ARCH" claude -p
+  printf '%s\n\nPregunta: %s\n' "$SISTEMA" "$1" | "$EN_ARCH" claude -p \
+    || fallar "Claude Code no contestó."
 }
 
 preguntar() {
@@ -143,7 +144,9 @@ responder() {
   local pregunta="$1" respuesta
   [ -n "$pregunta" ] || fallar "No te entendí."
   echo "▸ $pregunta"
-  respuesta=$(preguntar "$pregunta")
+  # Si Claude falla, preguntar ya avisó y sacó el "Pensando…": solo salir.
+  respuesta=$(preguntar "$pregunta") || exit 1
+  [ -n "$respuesta" ] || fallar "Claude no contestó."
   echo "✦ $respuesta"
   hablar "$respuesta"
 }

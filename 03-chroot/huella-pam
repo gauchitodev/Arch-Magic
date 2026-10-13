@@ -12,8 +12,12 @@ ESPERA=30
 
 [ -S "$SOCKET" ] || exit 1
 
+# Qué se va a correr: el padre de este programa es sudo, y su línea de comando
+# va en el cartel. Así no ponés el dedo por reflejo sin saber para qué.
+comando=$(tr '\0' ' ' < "/proc/$PPID/cmdline" 2>/dev/null)
+
 echo "✦ Poné el dedo en el sensor (o cancelá para usar la contraseña)…"
-respuesta=$(printf '%s %s\n' "${PAM_RUSER:-$PAM_USER}" "${PAM_SERVICE:-sudo}" \
+respuesta=$(printf '%s %s %s\n' "${PAM_RUSER:-$PAM_USER}" "${PAM_SERVICE:-sudo}" "$comando" \
   | timeout "$ESPERA" socat -t "$ESPERA" - UNIX-CONNECT:"$SOCKET" 2>/dev/null)
 
 [ "$respuesta" = OK ]

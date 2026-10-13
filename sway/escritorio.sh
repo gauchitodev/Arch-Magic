@@ -11,8 +11,8 @@ set -euo pipefail
 
 AQUI="$(cd "$(dirname "$0")" && pwd)"
 EN_ARCH="$AQUI/../03-chroot/en-arch.sh"
-# Dónde está este repo adentro de Arch.
-REPO_EN_ARCH="${REPO_EN_ARCH:-~/Arch-Magic}"
+# Este repo adentro de Arch: lo montan arch.sh y en-arch.sh.
+REPO_EN_ARCH="/opt/arch-magic"
 
 if ! pgrep -f termux-x11 >/dev/null; then
   termux-x11 :0 >/dev/null 2>&1 &
@@ -24,4 +24,4 @@ am start -n com.termux.x11/.MainActivity >/dev/null 2>&1
 pulseaudio --start --exit-idle-time=-1 \
   --load="module-native-protocol-tcp auth-ip-acl=127.0.0.1 auth-anonymous=1" 2>/dev/null || true
 
-exec "$EN_ARCH" env PULSE_SERVER=tcp:127.0.0.1 bash -c "$REPO_EN_ARCH/sway/iniciar.sh"
+exec "$EN_ARCH" env PULSE_SERVER=tcp:127.0.0.1 "$REPO_EN_ARCH/sway/iniciar.sh"
