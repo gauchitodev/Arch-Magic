@@ -1,17 +1,37 @@
 # ✦ Arch-Magic
 
-> Convertir un **RedMagic 10 Pro** en una súper terminal Arch Linux de bolsillo.
-> Menos gamer, más computadora.
+> Un teléfono gamer que quiere ser una ThinkPad.
 
-Arch-Magic es una guía y un conjunto de scripts para dejar la capa de RedMagic OS en segundo plano y usar el teléfono como una estación de trabajo Linux: Arch en chroot, Claude Code, un asistente de voz activado por el slider, Sway con modo móvil/escritorio automático y un launcher propio.
+**No es práctico.** Android ya hace casi todo esto mejor y con menos pasos. Pero quería un Arch en el bolsillo, y el **RedMagic 10 Pro** tiene un slider, gatillos de hombro y un ventilador esperando que alguien les dé otro uso.
 
-Hermano menor de [sway-deere](https://github.com/gauchitodev/sway-deere): aquel es la cosechadora, este es la varita.
+Arch-Magic es la bitácora de ese capricho: una guía y un conjunto de scripts para meter Arch Linux en el teléfono, con Claude Code, un asistente de voz que se activa con el slider, Sway que pasa solo de modo móvil a escritorio y un launcher propio.
+
+Hecho por un operador de maquinaria agrícola que aprende a programar y que ya convirtió su laptop en una cosechadora ([sway-deere](https://github.com/gauchitodev/sway-deere)). Aquel es la cosechadora, este es la varita.
+
+---
+
+## 🤔 ¿Para qué?
+
+Para nada imprescindible. Para todo lo demás:
+
+| Lo que se gana | Lo que se pierde |
+|---|---|
+| Arch y Claude Code en el bolsillo | La garantía |
+| Enchufarlo a un monitor y tener el escritorio de siempre | Las apps de banco y pagos (con root) |
+| Usar el slider y los gatillos para algo más que juegos | Batería |
+| Aprender cómo funciona Android por dentro | Horas de vida, y quizás el teléfono |
+
+### Android no desaparece
+
+Esto **no** es "una consola de comandos para todo". WhatsApp, la cámara, los mapas y los juegos siguen en Android, como siempre. Arch está al lado, para cuando querés trabajar, programar o jugar a ser hacker.
+
+**Android para la vida, Arch para la magia.**
 
 ---
 
 ## 🚧 Estado
 
-**Etapa de planificación.** El teléfono todavía no llegó. Todo lo que está acá es la hoja de ruta; cada sección se va a ir completando con lo que realmente funcione (y lo que no).
+**Diario de obra, etapa de planificación.** El teléfono todavía no llegó. Lo que hay acá es la hoja de ruta; cada sección se va a ir completando con lo que realmente funcione, y también con lo que no. Los fracasos quedan documentados: si algo me rompió el teléfono, que no te lo rompa a vos.
 
 ---
 
@@ -40,6 +60,8 @@ Si no estás dispuesto a perder el teléfono, quedate en las etapas marcadas **s
 ---
 
 ## 🗺️ Hoja de ruta
+
+Las etapas 1 a 3 son la base: meter Arch en el teléfono. Las **4 a 6 son la magia**: el slider, la voz y el launcher son los que hacen que esto se use con el dedo y no solo con un teclado.
 
 | Etapa | Carpeta | Root | Qué hace |
 |---|---|:---:|---|
