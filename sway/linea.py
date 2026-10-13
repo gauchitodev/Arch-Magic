@@ -8,6 +8,9 @@ Una rayita violeta pegada al borde de abajo de la pantalla:
     deslizar a la izquierda → pantalla de trabajo siguiente
     deslizar a la derecha   → pantalla de trabajo anterior
     deslizar para arriba    → menú de apps
+    tocar                   → muestra o esconde el teclado en pantalla
+
+El toque es para cuando no hay root: con root, el slider hace lo mismo.
 
 Mientras arrastrás, la rayita sigue al dedo.
 
@@ -27,12 +30,18 @@ ALTO = 28            # zona táctil, en píxeles
 GROSOR = 5           # grosor de la rayita
 ANCHO = 0.3          # ancho de la rayita, como fracción de la pantalla
 UMBRAL = 60          # cuánto hay que arrastrar para que cuente
+TOQUE = 12           # menos que esto es un toque, no un arrastre
 ACENTO = (0x9B / 255, 0x6B / 255, 0xFF / 255)  # violeta Arcano
 MENU = os.environ.get("ARCH_MAGIC_MENU", "wofi --show drun")
 
 
 def sway(*orden):
     subprocess.Popen(["swaymsg", *orden], stdout=subprocess.DEVNULL)
+
+
+def alternar_teclado():
+    # wvkbd: SIGRTMIN lo muestra si está escondido y lo esconde si se ve.
+    subprocess.Popen(["pkill", "-RTMIN", "-x", "wvkbd-mobintl"])
 
 
 class Linea(Gtk.Window):
@@ -104,7 +113,9 @@ class Linea(Gtk.Window):
         self.dx = 0
         self.queue_draw()
 
-        if -dy > UMBRAL and -dy > abs(dx):
+        if abs(dx) < TOQUE and abs(dy) < TOQUE:
+            alternar_teclado()
+        elif -dy > UMBRAL and -dy > abs(dx):
             subprocess.Popen(MENU, shell=True)
         elif dx < -UMBRAL:
             sway("workspace", "next_on_output")

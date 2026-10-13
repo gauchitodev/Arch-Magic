@@ -96,4 +96,26 @@ El resto de `/sdcard` y las particiones de Android **no se ven** desde Arch. Es 
 
 ## Sin root
 
-Mientras tanto, o si no querés rootear: `proot-distro`, como figura en el README principal. Es más lento y no ve el hardware, pero anda desde el primer día.
+Mientras no haya root (o si no querés rootear): Arch con `proot-distro`. Es más lento y no ve el hardware, pero anda desde el primer día y no toca nada de Android.
+
+```bash
+./sin-root.sh instalar     # proot-distro, Termux:X11 y Arch
+./sin-root.sh configurar   # pacman -Syu, idioma, zona horaria y tu usuario
+./en-arch.sh               # consola en Arch
+```
+
+Igual que con root, de `/sdcard` solo se ve `/sdcard/Arch-Magic` (en `/mnt/android`). El `/tmp` es el de Termux, para que Sway encuentre a Termux:X11.
+
+En proot, `sudo` no pide contraseña: root es de mentira y no puede tocar Android, así que no hay nada que proteger. Si `sudo` se queja de permisos (pasa en algunos proot), entrá como root con `ARCH_USUARIO=root ./en-arch.sh`.
+
+## Con root o sin root: `en-arch.sh`
+
+Los otros scripts (el asistente de voz, el escritorio) no llaman a `arch.sh` ni a `proot-distro`: llaman a `en-arch.sh`, que elige solo.
+
+```bash
+./en-arch.sh                       # consola
+./en-arch.sh claude --version      # un comando (la entrada estándar pasa derecho)
+ARCH_MODO=proot ./en-arch.sh       # forzar un modo
+```
+
+Si hay root y Arch está instalado con `arch.sh`, entra por chroot. Si no, por proot. Así, el día que rootees, instalás el chroot y todo lo demás sigue igual.

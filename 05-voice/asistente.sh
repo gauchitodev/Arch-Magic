@@ -6,6 +6,8 @@
 # Uso:  ./asistente.sh             la primera vez empieza a escuchar,
 #                                  la segunda corta, transcribe y responde
 #       ./asistente.sh "pregunta"  salta el micrófono (para probar)
+#       ./asistente.sh boton       deja un botón fijo en las notificaciones
+#       ./asistente.sh sin-boton   lo saca
 #
 # Flujo: micrófono → whisper.cpp → Claude → voz de Android
 # Corre en Termux como usuario normal (Termux:API no anda como root).
@@ -21,14 +23,12 @@ WHISPER_BIN="${WHISPER_BIN:-$HOME/whisper.cpp/build/bin/whisper-cli}"
 WHISPER_MODELO="${WHISPER_MODELO:-$HOME/whisper.cpp/models/ggml-base.bin}"
 
 # api    → API de Anthropic con curl (necesita ANTHROPIC_API_KEY, cuenta de Console)
-# code   → Claude Code adentro del chroot (usa tu plan Pro/Max, necesita root)
+# code   → Claude Code adentro de Arch (usa tu plan Pro/Max; con o sin root)
 # Sin decir nada: api si hay clave, code si no.
 CLAUDE_MODO="${CLAUDE_MODO:-}"
 CLAUDE_MODELO="${CLAUDE_MODELO:-claude-opus-5-5}"
 CLAVE_ARCHIVO="${CLAVE_ARCHIVO:-$HOME/.config/arch-magic/anthropic-key}"
-ARCH_SCRIPT="${ARCH_SCRIPT:-$AQUI/../03-chroot/arch.sh}"
-ARCH_RAIZ="${ARCH_RAIZ:-/data/local/arch}"
-ARCH_USUARIO="${ARCH_USUARIO:-gauchito}"
+EN_ARCH="${EN_ARCH:-$AQUI/../03-chroot/en-arch.sh}"
 
 VOZ_IDIOMA="${VOZ_IDIOMA:-es}"
 VOZ_REGION="${VOZ_REGION:-UY}"
@@ -114,12 +114,10 @@ preguntar_por_api() {
   jq -r '[.content[] | select(.type == "text") | .text] | join(" ")' <<<"$respuesta"
 }
 
-# Claude Code adentro de Arch. La pregunta va por stdin, así no hay que pelear
-# con comillas entre Termux, su, chroot y su de nuevo.
+# Claude Code adentro de Arch (chroot o proot, lo decide en-arch.sh). La
+# pregunta va por stdin, así no hay que pelear con comillas.
 preguntar_por_code() {
-  "$ARCH_SCRIPT" montar >/dev/null
-  printf '%s\n\nPregunta: %s\n' "$SISTEMA" "$1" \
-    | su -c "chroot $ARCH_RAIZ /usr/bin/su - $ARCH_USUARIO -c 'claude -p'"
+  printf '%s\n\nPregunta: %s\n' "$SISTEMA" "$1" | "$EN_ARCH" claude -p
 }
 
 preguntar() {
@@ -150,7 +148,23 @@ responder() {
   hablar "$respuesta"
 }
 
+# Botón fijo en la barra de notificaciones: sirve desde cualquier app, incluso
+# adentro de Termux:X11, y no necesita root (los gatillos sí).
+BOTON="arch-magic-boton"
+
+poner_boton() {
+  termux-notification --id "$BOTON" --title "✦ Arch-Magic" \
+    --content "Tocá Hablar, hablá y tocá de nuevo para cortar" \
+    --ongoing --priority low \
+    --button1 "Hablar" --button1-action "$AQUI/asistente.sh"
+}
+
 # --- Principal ---------------------------------------------------------------
+
+case "${1:-}" in
+  boton)     poner_boton; exit ;;
+  sin-boton) termux-notification-remove "$BOTON"; exit ;;
+esac
 
 if [ $# -gt 0 ]; then
   responder "$*"

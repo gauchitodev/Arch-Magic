@@ -2,6 +2,8 @@
 
 El slider y los gatillos de hombro, puestos a laburar. **Requiere root** (para leer los botones con `getevent`).
 
+Sin root no hay botones, pero todo tiene reemplazo: el teclado se abre tocando la línea de abajo, las pantallas se cambian deslizándola y el asistente tiene un botón en las notificaciones.
+
 > 🚧 Bosquejo: escrito antes de que llegue el teléfono, sin probar. La lógica de los gatillos está probada con eventos falsos en una PC.
 
 | Entrada | Acción |

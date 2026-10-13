@@ -8,7 +8,7 @@ Apretás los dos gatillos, hablás, los volvés a apretar y Claude te contesta e
 gatillos → termux-microphone-record → ffmpeg → whisper.cpp → Claude → termux-tts-speak
 ```
 
-Todo corre en Termux, sin root (salvo el modo `code`, que entra al chroot).
+Todo corre en Termux, sin root.
 
 ## Instalación
 
@@ -38,14 +38,24 @@ Todo corre en Termux, sin root (salvo el modo `code`, que entra al chroot).
 ./asistente.sh "¿qué hora es en Tokio?"   # sin micrófono, para probar
 ```
 
-Normalmente no se llama a mano: lo dispara el demonio de [`04-input/`](../04-input/) con los dos gatillos.
+Normalmente no se llama a mano:
+
+- **Sin root:** un botón fijo en las notificaciones. Lo ponés una vez con `./asistente.sh boton` (y lo sacás con `./asistente.sh sin-boton`). Anda desde cualquier app, incluso con Sway en pantalla completa.
+- **Con root:** los dos gatillos juntos, con el demonio de [`04-input/`](../04-input/).
+
+También se puede poner en la pantalla de inicio con **Termux:Widget**:
+
+```bash
+mkdir -p ~/.shortcuts/tasks
+ln -s ~/Arch-Magic/05-voice/asistente.sh ~/.shortcuts/tasks/Asistente
+```
 
 ## Con qué Claude habla
 
 | Modo | Qué usa | Qué necesita |
 |---|---|---|
 | `api` | La API de Anthropic con `curl` | Una clave de Console (se paga aparte del plan) |
-| `code` | `claude -p` adentro del chroot | Tu plan Pro/Max, root y Arch montado |
+| `code` | `claude -p` adentro de Arch | Tu plan Pro/Max. Anda con root (chroot) o sin root (proot) |
 
 Sin configurar nada, usa `api` si encuentra una clave y `code` si no. La clave va en `ANTHROPIC_API_KEY` o en `~/.config/arch-magic/anthropic-key`.
 

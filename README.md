@@ -59,6 +59,34 @@ Si no estás dispuesto a perder el teléfono, quedate en las etapas marcadas **s
 
 ---
 
+## 🌱 Primer día: sin root
+
+El unlock borra todo el teléfono y conviene esperar a confirmar en XDA que tu firmware se puede desbloquear sin riesgo. Mientras tanto, casi todo anda **sin root**:
+
+| Qué | Sin root | Con root |
+|---|:---:|:---:|
+| Arch + pacman + Claude Code | ✅ proot (más lento) | ✅ chroot (casi nativo) |
+| Sway y la línea de gestos | ✅ | ✅ |
+| Asistente de voz | ✅ botón en la notificación | ✅ los dos gatillos |
+| Teclado en pantalla | ✅ tocando la línea | ✅ con el slider |
+| Cambiar de pantalla de trabajo | ✅ deslizando la línea | ✅ también con los gatillos |
+| `sudo` con huella | — (en proot root es de mentira) | ✅ |
+
+```bash
+git clone https://github.com/gauchitodev/Arch-Magic ~/Arch-Magic
+cd ~/Arch-Magic
+03-chroot/sin-root.sh instalar && 03-chroot/sin-root.sh configurar
+03-chroot/en-arch.sh          # consola en Arch
+sway/escritorio.sh            # escritorio con Sway
+05-voice/asistente.sh boton   # botón del asistente en las notificaciones
+```
+
+Los scripts no necesitan saber si hay root: [`en-arch.sh`](03-chroot/en-arch.sh) entra por chroot si puede y por proot si no. Cuando llegue el root, se instala el chroot y todo sigue funcionando igual, solo que más rápido.
+
+**Todo lo que configures en esta etapa va al repo**, como script o archivo de config. Así, después del unlock, volver a dejar todo como estaba es correr un par de comandos.
+
+---
+
 ## 🗺️ Hoja de ruta
 
 Las etapas 1 a 3 son la base: meter Arch en el teléfono. Las **4 a 6 son la magia**: el slider, la voz y el launcher son los que hacen que esto se use con el dedo y no solo con un teclado.
@@ -123,10 +151,7 @@ Pasos exactos: _a completar con la experiencia real_.
 **Sin root (proot)** — funciona desde el día uno:
 
 ```bash
-pkg update && pkg upgrade
-pkg install proot-distro x11-repo termux-x11-nightly pulseaudio
-proot-distro install archlinux
-proot-distro login archlinux
+./sin-root.sh instalar && ./sin-root.sh configurar && ./en-arch.sh
 ```
 
 **Con root (chroot)** — casi nativo, acceso real al hardware. Script en [`03-chroot/`](03-chroot/):
@@ -147,7 +172,7 @@ source ~/.bashrc
 claude --version
 ```
 
-> Regla: Claude Code trabaja **dentro** del chroot y pide permiso antes de cada comando. No darle acceso a las particiones de Android.
+> Regla: Claude Code trabaja **dentro** de Arch (chroot o proot) y pide permiso antes de cada comando. No darle acceso a las particiones de Android.
 
 ### Etapa 4 — Entradas físicas
 
@@ -174,11 +199,7 @@ TECLADO="Keyboard"   # parte del nombre del teclado BT
 while true; do
   if su -c cat /proc/bus/input/devices | grep -qi "$TECLADO"; then
     if ! pgrep -f termux-x11 >/dev/null; then
-      termux-x11 :0 &
-      sleep 2
-      am start -n com.termux.x11/.MainActivity
-      ~/Arch-Magic/03-chroot/arch.sh montar
-      su -c "chroot /data/local/arch su - gauchito -c '~/Arch-Magic/sway/iniciar.sh'" &
+      ~/Arch-Magic/sway/escritorio.sh &
     fi
   else
     pkill -f termux-x11
