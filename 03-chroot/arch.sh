@@ -178,15 +178,40 @@ configurar() {
   '
 
   decir "Llaves de pacman y actualización…"
-  # pacman 7 se encierra con Landlock al descargar. Si el kernel de Android no lo
-  # trae (o no se puede confirmar), pacman falla: en ese caso se apaga el encierro.
-  if ! grep -qs landlock /sys/kernel/security/lsm \
-     && ! grep -q '^DisableSandbox' "$ARCH_RAIZ/etc/pacman.conf"; then
-    avisar "No pude confirmar que el kernel tenga Landlock: pacman va sin sandbox."
-    sed -i '/^\[options\]/a DisableSandbox' "$ARCH_RAIZ/etc/pacman.conf"
-  fi
   en_arch pacman-key --init
   en_arch pacman-key --populate archlinuxarm
+
+  # Cada vez que pacman instala algo, systemd-tmpfiles arregla dueños y permisos
+  # de dispositivos. Acá /dev y /sys son los de Android: le cambiaría los
+  # permisos al sonido y compañía hasta reiniciar (visto en la prueba en PC).
+  # Este hook pisa al de fábrica (mismo nombre) y deja afuera /dev, /sys y /proc.
+  mkdir -p "$ARCH_RAIZ/etc/pacman.d/hooks"
+  sed 's|^Exec = .*|Exec = /usr/bin/systemd-tmpfiles --create --exclude-prefix=/dev --exclude-prefix=/sys --exclude-prefix=/proc|' \
+    "$ARCH_RAIZ/usr/share/libalpm/hooks/21-systemd-tmpfiles.hook" \
+    > "$ARCH_RAIZ/etc/pacman.d/hooks/21-systemd-tmpfiles.hook"
+
+  # La imagen trae kernel, firmware y mkinitcpio para placas como la Raspberry.
+  # Acá el kernel es el de Android: afuera, así -Syu no baja cientos de MB al
+  # pedo ni arma un initramfs que nadie usa.
+  decir "Sacando kernel y firmware que en Android no se usan…"
+  en_arch bash -c '
+    sobra=$(pacman -Qq | grep -E "^(linux-aarch64|linux-firmware.*|mkinitcpio.*)$" || true)
+    [ -z "$sobra" ] || pacman -Rns --noconfirm $sobra
+  '
+
+  # pacman 7 se encierra con Landlock al descargar. Si el kernel no lo deja
+  # (no alcanza con mirar /sys: puede decir que sí y fallar igual), pacman no
+  # descarga nada. Se prueba de verdad y, si falla por eso, se apaga el encierro.
+  local prueba
+  if ! prueba=$(en_arch pacman -Sy 2>&1); then
+    if grep -q Landlock <<<"$prueba"; then
+      avisar "El kernel no deja usar Landlock: pacman va sin sandbox."
+      sed -i '/^\[options\]/a DisableSandbox' "$ARCH_RAIZ/etc/pacman.conf"
+    else
+      echo "$prueba" >&2
+      morir "pacman no pudo descargar. Mirá 'Si algo falla' en el README."
+    fi
+  fi
   en_arch pacman -Syu --noconfirm
   en_arch pacman -S --noconfirm --needed sudo git curl base-devel
 
@@ -239,7 +264,9 @@ desmontar() {
     montado "$d" || continue
     umount "$d" 2>/dev/null || {
       avisar "$d está ocupado, lo desmonto en diferido."
-      umount -l "$d"
+      # Si ni así se puede, avisar y seguir con el resto: cortar acá dejaría
+      # todo lo demás montado.
+      umount -l "$d" 2>/dev/null || avisar "No pude desmontar $d."
     }
   done
   decir "Desmontado."

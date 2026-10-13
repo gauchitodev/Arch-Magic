@@ -2,7 +2,7 @@
 
 Arch Linux ARM corriendo sobre el kernel de Android, casi nativo y con acceso real al hardware. **Requiere root** (Etapa 2).
 
-> 🚧 Escrito antes de que llegue el teléfono. La lógica de montaje está probada en una PC, pero en el RedMagic todavía no. Cuando lo esté, este aviso desaparece.
+> 🚧 Escrito antes de que llegue el teléfono. Probado en una PC (13/10) con la imagen real de Arch Linux ARM emulada con qemu, en un espacio aislado sin root: `instalar`, `configurar` (unos 3 minutos), `huella`, `entrar` y `desmontar`. `sudo` con huella se probó con PAM de verdad sobre un Arch de PC (qemu no respeta el setuid de sudo). En el RedMagic todavía no: cuando lo esté, este aviso desaparece.
 
 ## Uso
 
@@ -85,7 +85,9 @@ El resto de `/sdcard` y las particiones de Android **no se ven** desde Arch. Es 
 
 - **`/data` viene con `nosuid`**: sin remontarlo, `sudo` no funciona. El script lo remonta con `dev,suid`.
 - **pacman no encuentra el punto de montaje de `/`** al revisar el espacio libre: el script monta la raíz de Arch sobre sí misma, como hace `arch-chroot`.
-- **pacman 7 se encierra con Landlock** y el kernel de Android puede no traerlo: si no está, `configurar` agrega `DisableSandbox` solo.
+- **pacman 7 se encierra con Landlock** y el kernel de Android puede no dejarlo: `configurar` prueba `pacman -Sy` y, si falla por eso, agrega `DisableSandbox` solo. (Mirar `/sys/kernel/security/lsm` no alcanza: en la prueba en PC decía que sí y pacman falló igual.)
+- **pacman toca `/dev` y `/sys` sin avisar**: cada vez que instala algo, `systemd-tmpfiles` arregla dueños y permisos de dispositivos (sonido, `/dev/kvm`, `/dev/loop-control`…). Acá son los de Android, así que podría romper el sonido de Android hasta reiniciar. `configurar` pone un hook en `/etc/pacman.d/hooks/` que hace lo mismo pero deja afuera `/dev`, `/sys` y `/proc`. Apareció en la prueba en PC.
+- **La imagen trae kernel, firmware y mkinitcpio** para placas como la Raspberry. En Android no sirven: `configurar` los saca antes de actualizar (1,3 GB menos).
 - **No hay `/etc/resolv.conf`**: Android resuelve DNS por otro lado. Se escribe uno con 1.1.1.1 y 8.8.8.8.
 - **Red restringida por grupo**: el kernel de Android solo deja usar internet a los grupos `aid_inet` (3003) y `aid_net_raw` (3004). Se crean en Arch y se agregan root, tu usuario y `alpm`, que es con el que pacman descarga.
 - **Los montajes se pierden entre sesiones de su**: el script usa `su --mount-master` (Magisk y KernelSU) para que queden en el espacio de nombres global.
