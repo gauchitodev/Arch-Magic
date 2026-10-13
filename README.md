@@ -4,7 +4,7 @@
 
 **No es práctico.** Android ya hace casi todo esto mejor y con menos pasos. Pero quería un Arch en el bolsillo, y el **RedMagic 10 Pro** tiene un slider, gatillos de hombro y un ventilador esperando que alguien les dé otro uso.
 
-Arch-Magic es la bitácora de ese capricho: una guía y un conjunto de scripts para meter Arch Linux en el teléfono, con Claude Code, un asistente de voz que se activa con el slider, Sway que pasa solo de modo móvil a escritorio y un launcher propio.
+Arch-Magic es la bitácora de ese capricho: una guía y un conjunto de scripts para meter Arch Linux en el teléfono, con Claude Code, un asistente de voz que se activa con los gatillos, una línea de gestos como la de Motorola para moverse entre pantallas, Sway que pasa solo de modo móvil a escritorio y un launcher propio.
 
 Hecho por un operador de maquinaria agrícola que aprende a programar y que ya convirtió su laptop en una cosechadora ([sway-deere](https://github.com/gauchitodev/sway-deere)). Aquel es la cosechadora, este es la varita.
 
@@ -69,7 +69,7 @@ Las etapas 1 a 3 son la base: meter Arch en el teléfono. Las **4 a 6 son la mag
 | 1 | `01-debloat/` | ❌ | Sacar basura de fábrica por ADB |
 | 2 | `02-root/` | — | Unlock por EDL + parcheo de `init_boot` |
 | 3 | `03-chroot/` | ✅ | Arch Linux en chroot (o proot sin root) + Claude Code |
-| 4 | `04-input/` | ✅ | Slider, gatillos y detección de teclado BT |
+| 4 | `04-input/` | ✅ | Slider → teclado, gatillos → pantallas y voz, teclado BT |
 | 5 | `05-voice/` | ❌ | Asistente de voz: Whisper + Claude + TTS |
 | 6 | `06-launcher/` | ❌ | Launcher propio que reemplaza al de RedMagic |
 | — | `termux/` | ❌ | Configuración de Termux, tmux y paleta |
@@ -155,17 +155,13 @@ Descubrir qué evento manda cada botón:
 su -c getevent -l
 ```
 
-Demonio base (slider → asistente, gatillos → ventanas):
+Demonio en [`04-input/entradas.sh`](04-input/entradas.sh):
 
-```bash
-su -c "getevent -l /dev/input/eventX" | while read -r line; do
-  case "$line" in
-    *CODIGO_SLIDER*DOWN*)  ~/arch-magic/asistente.sh & ;;
-    *GATILLO_IZQ*DOWN*)    swaymsg focus left ;;
-    *GATILLO_DER*DOWN*)    swaymsg focus right ;;
-  esac
-done
-```
+| Entrada | Acción |
+|---|---|
+| Slider afuera / adentro | Muestra / esconde el teclado en pantalla |
+| Gatillo izquierdo / derecho | Pantalla de trabajo anterior / siguiente |
+| Los dos gatillos juntos | Asistente de voz |
 
 **Modo escritorio automático** al conectar un teclado Bluetooth:
 
@@ -179,7 +175,8 @@ while true; do
       termux-x11 :0 &
       sleep 2
       am start -n com.termux.x11/.MainActivity
-      ~/arch-magic/start-sway.sh &
+      ~/Arch-Magic/03-chroot/arch.sh montar
+      su -c "chroot /data/local/arch su - gauchito -c '~/Arch-Magic/sway/iniciar.sh'" &
     fi
   else
     pkill -f termux-x11
@@ -195,10 +192,10 @@ Arranque automático con **Termux:Boot**. Alternativa sin root: MacroDroid/Taske
 Flujo:
 
 ```
-slider → termux-microphone-record → whisper.cpp → Claude → termux-tts-speak
+gatillos → termux-microphone-record → whisper.cpp → Claude → termux-tts-speak
 ```
 
-Requiere la app **Termux:API** (F-Droid) y `pkg install termux-api`. Script completo: _a completar_.
+Requiere la app **Termux:API** (F-Droid) y `pkg install termux-api`. Script en [`05-voice/`](05-voice/).
 
 ### Etapa 6 — Launcher propio
 
@@ -249,6 +246,8 @@ include ~/.config/sway/modo-actual.conf
 ln -sf ~/.config/sway/escritorio.conf ~/.config/sway/modo-actual.conf
 swaymsg reload
 ```
+
+Abajo de todo va una **línea de gestos como la de Motorola**: deslizás a los costados para cambiar de pantalla de trabajo y para arriba para el menú de apps. Detalles en [`sway/`](sway/).
 
 Respaldo si Sway anidado no rinde: i3 sobre Termux:X11.
 

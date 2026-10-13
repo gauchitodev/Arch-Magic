@@ -6,6 +6,7 @@
 #   instalar     descarga Arch Linux ARM y lo descomprime en $ARCH_RAIZ
 #   configurar   primer arranque: DNS, llaves de pacman, idioma y tu usuario
 #   entrar       monta todo y abre una consola en Arch (como root o [usuario])
+#   montar       monta todo sin abrir consola (lo usan los otros scripts)
 #   desmontar    desmonta todo en orden inverso
 #   estado       muestra qué está montado
 #
@@ -223,8 +224,12 @@ case "$comando" in
     shift
     "$comando" "$@"
     ;;
+  montar)
+    como_root "$@"
+    montar_todo
+    ;;
   *)
-    sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'
     exit 1
     ;;
 esac

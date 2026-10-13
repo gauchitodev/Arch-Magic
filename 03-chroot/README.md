@@ -22,6 +22,7 @@ cd ~/Arch-Magic/03-chroot
 | `instalar` | Descarga `ArchLinuxARM-aarch64-latest.tar.gz` y lo descomprime en `/data/local/arch` |
 | `configurar` | Primer arranque: DNS, grupos de red, llaves de pacman, `pacman -Syu`, `sudo`, idioma, zona horaria y usuario. Borra el usuario `alarm` que trae la imagen |
 | `entrar [usuario]` | Monta todo y abre una consola. Sin usuario, entra como root |
+| `montar` | Monta todo sin abrir consola. Lo usan el asistente de voz y el demonio de entradas |
 | `desmontar` | Desmonta todo, de adentro hacia afuera |
 | `estado` | Muestra qué está montado |
 
