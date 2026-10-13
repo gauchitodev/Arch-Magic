@@ -25,8 +25,31 @@ cd ~/Arch-Magic/03-chroot
 | `montar` | Monta todo sin abrir consola. Lo usan el asistente de voz y el demonio de entradas |
 | `desmontar` | Desmonta todo, de adentro hacia afuera |
 | `estado` | Muestra qué está montado |
+| `huella` | Usa la huella digital para `sudo`. `huella quitar` vuelve a solo contraseña |
 
 `entrar` se puede llamar las veces que quieras: lo que ya está montado no se vuelve a montar.
+
+## Huella digital para sudo
+
+Linux no puede leer el sensor de huellas: lo maneja Android. Así que se hace un puente:
+
+```
+sudo (Arch) → huella-pam → socket → huella.sh (Termux) → cartel de huella de Android
+```
+
+```bash
+pkg install termux-api socat jq   # y la app Termux:API de F-Droid
+./arch.sh huella                  # instala el lado de Arch (una sola vez)
+./huella.sh                       # dejarlo corriendo (o con Termux:Boot)
+```
+
+Cuando hagas `sudo` en Arch, aparece el cartel de Android con quién lo pide. Ponés el dedo y listo.
+
+**La contraseña nunca deja de andar.** Si la huella falla, si tocás "Usar contraseña", si pasan 30 segundos o si `huella.sh` no está corriendo, sudo te pide la contraseña como siempre. Para volver a solo contraseña: `./arch.sh huella quitar`.
+
+Por qué no se puede trampear desde Arch: el socket vive en una carpeta que es del usuario de Termux con permisos `700`. Los usuarios de Arch no pueden ni mirarla, así que no pueden poner un socket falso que conteste "OK". Solo root (o sea, sudo) llega.
+
+Probado en una PC con `sudo` y PAM de verdad y un sensor de mentira: huella buena entra sin contraseña, huella mala cae a la contraseña, y sin demonio también. En esa prueba apareció que `pam_exec` corre el programa como el usuario y no como root, por eso la regla lleva `seteuid`.
 
 ## Configuración
 
@@ -53,6 +76,7 @@ ARCH_USUARIO=franco ./arch.sh configurar
 | `/dev/shm`, `/tmp` | RAM | Temporales; se borran al desmontar |
 | `/tmp/.X11-unix` | Termux:X11 | Que Sway pueda dibujar en `DISPLAY=:0` |
 | `/mnt/android` | `/sdcard/Arch-Magic` | **La única** carpeta compartida con Android |
+| `/run/arch-magic` | Termux | El socket de la huella para `sudo` (solo lo ve root) |
 
 El resto de `/sdcard` y las particiones de Android **no se ven** desde Arch. Es a propósito: Claude Code trabaja ahí adentro y no tiene por qué tocar tus fotos.
 

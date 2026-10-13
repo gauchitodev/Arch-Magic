@@ -9,6 +9,7 @@
 #   montar       monta todo sin abrir consola (lo usan los otros scripts)
 #   desmontar    desmonta todo en orden inverso
 #   estado       muestra qué está montado
+#   huella       usa la huella digital para sudo (huella quitar: vuelve a contraseña)
 #
 # Se corre desde Termux como usuario normal: el script se vuelve a llamar con su.
 
@@ -29,6 +30,13 @@ COMPARTIDA_ARCH="/mnt/android"
 
 TERMUX="/data/data/com.termux/files"
 TERMUX_BIN="$TERMUX/usr/bin"
+
+# Socket de huella.sh: en Termux de un lado, /run/arch-magic del otro.
+HUELLA_TERMUX="$TERMUX/usr/tmp/arch-magic"
+HUELLA_ARCH="/run/arch-magic"
+
+AQUI="$(cd "$(dirname "$0")" && pwd)"
+ESTE="$AQUI/$(basename "$0")"
 
 # --- Utilidades --------------------------------------------------------------
 
@@ -51,7 +59,7 @@ como_root() {
     "ARCH_RAIZ=$ARCH_RAIZ" "ARCH_URL=$ARCH_URL" "ARCH_USUARIO=$ARCH_USUARIO" \
     "ARCH_IDIOMA=$ARCH_IDIOMA" "ARCH_ZONA=$ARCH_ZONA" \
     "COMPARTIDA_ANDROID=$COMPARTIDA_ANDROID" "TERM=${TERM:-xterm-256color}" \
-    "$TERMUX_BIN/bash" "$0" "$@")
+    "$TERMUX_BIN/bash" "$ESTE" "$@")
   # Magisk y KernelSU entienden --mount-master; si este su no, va sin él.
   if su --mount-master -c true >/dev/null 2>&1; then
     exec su --mount-master -c "$linea"
@@ -115,6 +123,15 @@ montar_todo() {
 
   mkdir -p "$COMPARTIDA_ANDROID"
   montar "$ARCH_RAIZ$COMPARTIDA_ARCH" --bind "$COMPARTIDA_ANDROID"
+
+  # Carpeta del socket de huella.sh. La creamos nosotros (root), pero tiene que
+  # ser del usuario de Termux, que es quien pone el socket.
+  if [ ! -d "$HUELLA_TERMUX" ]; then
+    mkdir -p "$HUELLA_TERMUX"
+    chown "$(stat -c %u:%g "$TERMUX")" "$HUELLA_TERMUX"
+    chmod 700 "$HUELLA_TERMUX"
+  fi
+  montar "$ARCH_RAIZ$HUELLA_ARCH" --bind "$HUELLA_TERMUX"
 }
 
 # Corre un comando dentro de Arch con un entorno limpio.
@@ -184,6 +201,7 @@ entrar() {
 desmontar() {
   # Orden inverso: primero lo más adentro.
   local destinos=(
+    "$ARCH_RAIZ$HUELLA_ARCH"
     "$ARCH_RAIZ$COMPARTIDA_ARCH"
     "$ARCH_RAIZ/tmp/.X11-unix"
     "$ARCH_RAIZ/tmp"
@@ -204,6 +222,36 @@ desmontar() {
   decir "Desmontado."
 }
 
+# Huella para sudo: pam_exec le pregunta a huella.sh antes que la contraseña.
+# Si la huella falla, se cancela o huella.sh no está corriendo, sudo pide la
+# contraseña como siempre: nunca te deja afuera. seteuid hace que huella-pam
+# corra como root (sin eso corre como vos y no llega al socket).
+PAM_HUELLA="auth sufficient pam_exec.so quiet stdout seteuid /usr/local/lib/arch-magic/huella-pam"
+
+huella() {
+  local pam="$ARCH_RAIZ/etc/pam.d/sudo"
+  [ -f "$pam" ] || morir "No encuentro $pam. ¿Corriste ./arch.sh configurar?"
+
+  if [ "${1:-}" = quitar ]; then
+    sed -i '/huella-pam/d' "$pam"
+    decir "sudo vuelve a pedir solo contraseña."
+    return
+  fi
+
+  montar_todo
+  en_arch pacman -S --noconfirm --needed socat
+  # De root y sin permiso de escritura para nadie más: lo ejecuta sudo.
+  install -D -m 755 -o 0 -g 0 "$AQUI/huella-pam" \
+    "$ARCH_RAIZ/usr/local/lib/arch-magic/huella-pam"
+  if ! grep -q huella-pam "$pam"; then
+    # Primera regla de auth, justo debajo de la cabecera.
+    sed -i "1a $PAM_HUELLA" "$pam"
+  fi
+
+  decir "Listo. Dejá corriendo ./huella.sh en Termux y probá: sudo true"
+  avisar "La contraseña sigue andando: si la huella falla, sudo te la pide."
+}
+
 estado() {
   local lineas
   lineas=$(grep " $ARCH_RAIZ" /proc/mounts | awk '{print "  " $2 "  (" $3 ")"}' || true)
@@ -219,7 +267,7 @@ estado() {
 
 comando="${1:-}"
 case "$comando" in
-  instalar|configurar|entrar|desmontar|estado)
+  instalar|configurar|entrar|desmontar|estado|huella)
     como_root "$@"
     shift
     "$comando" "$@"
@@ -229,7 +277,7 @@ case "$comando" in
     montar_todo
     ;;
   *)
-    sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'
     exit 1
     ;;
 esac

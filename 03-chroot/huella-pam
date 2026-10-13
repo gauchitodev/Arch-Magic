@@ -1,0 +1,19 @@
+#!/bin/bash
+# ✦ Arch-Magic — huella digital para sudo (lado Arch)
+#
+# Lo llama pam_exec cuando sudo pide permiso. Le pregunta a huella.sh (que
+# corre en Termux) y sale con 0 si la huella dio bien. Con cualquier otra cosa
+# (sin demonio, cancelaste, tardaste) sale con 1 y sudo pide la contraseña.
+#
+# Se instala con:  ./arch.sh huella
+
+SOCKET=/run/arch-magic/huella.sock
+ESPERA=30
+
+[ -S "$SOCKET" ] || exit 1
+
+echo "✦ Poné el dedo en el sensor (o cancelá para usar la contraseña)…"
+respuesta=$(printf '%s %s\n' "${PAM_RUSER:-$PAM_USER}" "${PAM_SERVICE:-sudo}" \
+  | timeout "$ESPERA" socat -t "$ESPERA" - UNIX-CONNECT:"$SOCKET" 2>/dev/null)
+
+[ "$respuesta" = OK ]

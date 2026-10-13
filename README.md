@@ -135,6 +135,8 @@ proot-distro login archlinux
 ./arch.sh instalar && ./arch.sh configurar && ./arch.sh entrar gauchito
 ```
 
+`sudo` con **huella digital**: el sensor lo maneja Android, así que un puente en Termux muestra el cartel de huella cuando Arch pide permiso. Si falla, pide la contraseña de siempre. Detalles en [`03-chroot/`](03-chroot/#huella-digital-para-sudo).
+
 **Claude Code** (dentro de Arch; requiere plan Pro/Max o cuenta de Console):
 
 ```bash
