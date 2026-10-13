@@ -28,7 +28,9 @@ Mientras arrastrás, la rayita sigue al dedo. Hace lo mismo que los gatillos, pe
 
 [wvkbd](https://github.com/jjsullivan5196/wvkbd) arranca escondido. Sin root, aparece y desaparece tocando la línea de abajo. Con root, también con el slider (ver [`04-input/`](../04-input/)). Está en AUR como `wvkbd`.
 
-> A verificar en el teléfono: que wvkbd alterne con `SIGRTMIN` (el toque de la línea) y que se muestre y esconda con `SIGUSR2` y `SIGUSR1` (el slider).
+Probado en una PC (13/10) con wvkbd 0.20: arranca escondido; tocar la línea lo muestra y lo esconde (`SIGRTMIN`); `SIGUSR2` lo muestra y `SIGUSR1` lo esconde (el slider), y mandar `SIGUSR2` dos veces no lo rompe. Cuando aparece, la línea se corre sola arriba del teclado, así que se puede seguir tocando. Las teclas escriben en la ventana con foco.
+
+> A verificar en el teléfono: en la PC se perdió **la primera tecla** después de arrancar wvkbd (las siguientes entraron todas). Es un detalle conocido de los teclados virtuales en Wayland; si en el teléfono pasa seguido, se busca arreglo.
 
 ## Instalación (adentro de Arch)
 
