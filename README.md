@@ -49,6 +49,8 @@ Esto **no** es "una consola de comandos para todo". WhatsApp, la cámara, los ma
 ## ⚠️ Advertencias — leer antes de tocar nada
 
 - **Desbloquear el bootloader borra todo el teléfono** y anula la garantía.
+- **Ningún seguro te salva.** Los seguros de equipos suelen excluir los daños por "configuración del sistema o programación": un brick por flasheo corre por tu cuenta.
+- **Respaldá el módem antes de flashear.** Las particiones con el IMEI son únicas de tu teléfono; si un flasheo por EDL las pisa, quedás sin señal para siempre. Ver [`02-root/`](02-root/#paso-0--respaldo-del-módem-obligatorio).
 - En el 10 Pro, ZTE **deshabilitó** `fastboot flashing unlock`. El único método conocido usa **modo EDL (9008)** con ZTE Family Toolbox. EDL mal usado = ladrillo.
 - **Nunca** flashees un `vbmeta` para deshabilitar AVB desde fastboot: deja el equipo en bootloop y solo se recupera por EDL.
 - Con root, las apps de banco y pagos pueden dejar de funcionar.
@@ -95,7 +97,7 @@ Las etapas 1 a 3 son la base: meter Arch en el teléfono. Las **4 a 6 son la mag
 |---|---|:---:|---|
 | 0 | — | ❌ | Unboxing: anotar firmware, no actualizar, no cargar datos |
 | 1 | `01-debloat/` | ❌ | Sacar basura de fábrica por ADB |
-| 2 | `02-root/` | — | Unlock por EDL + parcheo de `init_boot` |
+| 2 | `02-root/` | — | Respaldo del módem, unlock por EDL y parcheo de `init_boot` |
 | 3 | `03-chroot/` | ✅ | Arch Linux en chroot (o proot sin root) + Claude Code |
 | 4 | `04-input/` | ✅ | Slider → teclado, gatillos → pantallas y voz, teclado BT |
 | 5 | `05-voice/` | ❌ | Asistente de voz: Whisper + Claude + TTS |
@@ -108,8 +110,9 @@ Las etapas 1 a 3 son la base: meter Arch en el teléfono. Las **4 a 6 son la mag
 ### Etapa 0 — Unboxing
 
 1. Ajustes → Acerca del teléfono → anotar **versión de firmware**.
-2. No aceptar OTAs todavía.
-3. No configurar cuentas ni cargar datos (el unlock va a borrar todo).
+2. Anotar el **IMEI** (`*#06#`) y sacarle foto a la etiqueta de la caja.
+3. No aceptar OTAs todavía.
+4. No configurar cuentas ni cargar datos (el unlock va a borrar todo).
 
 ### Etapa 1 — Debloat (sin root)
 
@@ -139,6 +142,7 @@ adb shell cmd package install-existing nombre.del.paquete
 
 ### Etapa 2 — Bootloader y root
 
+- **Primero, el respaldo del módem**: la primera sesión en EDL es solo de lectura. Sin respaldo guardado fuera del teléfono, no se sigue. Ver [`02-root/`](02-root/).
 - Herramienta: **ZTE Family Toolbox ≥ 1.2.3** (Windows).
 - Conexión en **modo EDL (9008)**, no fastboot.
 - Guía de referencia: hilo de AdaUnlocked en XDA (ver Créditos).
