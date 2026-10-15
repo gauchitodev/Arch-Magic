@@ -73,12 +73,15 @@ sacar() {
   done < "$lista"
   [ "${#paquetes[@]}" -gt 0 ] || morir "La lista está vacía."
 
+  # Antes de preguntar: si no se puede anotar lo sacado, no se saca nada.
+  { mkdir -p "$(dirname "$REGISTRO")" && touch "$REGISTRO"; } 2>/dev/null \
+    || morir "No puedo escribir en $REGISTRO. Corré termux-setup-storage, aceptá el permiso y probá de nuevo."
+
   decir "Se van a sacar ${#paquetes[@]} apps:"
   printf '    %s\n' "${paquetes[@]}"
   read -r -p "¿Seguir? [s/N] " respuesta
   [ "$respuesta" = s ] || [ "$respuesta" = S ] || morir "No se sacó nada."
 
-  mkdir -p "$(dirname "$REGISTRO")"
   for p in "${paquetes[@]}"; do
     if pm_root "uninstall --user 0 $p" 2>&1 | grep -q Success; then
       echo "$p" >> "$REGISTRO"
