@@ -2,6 +2,8 @@
 
 Sacar las apps de RedMagic, ZTE y compañía que no se usan, **sin romper nada**: `pm uninstall --user 0` solo saca la app para tu usuario (no toca la partición del sistema) y se vuelve a poner cuando quieras.
 
+> ✅ Probado (15/10/2026): la primera ronda de [`sacar.txt`](sacar.txt) (11 apps) se aplicó en la 10.0.9 EEA con el root de GhostLock. Después de reiniciar, todo anda normal.
+
 Necesita root ([GhostLock](../02-root/#camino-1--ghostlock-root-temporal-sin-desbloquear) sirve) o `adb` desde una PC.
 
 ## Pasos
@@ -18,6 +20,8 @@ Con esa lista se arma `sacar.txt`: una app por línea, con un comentario de qué
 ./debloat.sh restaurar     # vuelve a poner todo lo sacado
 ./debloat.sh restaurar com.ejemplo.app   # o una sola
 ```
+
+Si `sacar` dice que no puede escribir en `/sdcard`, falta darle permiso a Termux: `termux-setup-storage`.
 
 Lo sacado queda anotado en `/sdcard/Arch-Magic/debloat-sacados.txt` (afuera del repo), así siempre se puede restaurar.
 
