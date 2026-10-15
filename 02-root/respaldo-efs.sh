@@ -1,15 +1,19 @@
 #!/data/data/com.termux/files/usr/bin/bash
-# ✦ Arch-Magic — respaldo de las particiones del módem (IMEI, señal, calibración)
+# ✦ Arch-Magic — respaldo del módem (IMEI) y del arranque de fábrica
 #
 # 🚧 Bosquejo: escrito antes de que llegue el teléfono. Probado en una PC con
 # particiones de mentira.
 #
-# Uso:  ./respaldo-efs.sh              respalda (necesita root)
+# Uso:  ./respaldo-efs.sh              respalda (necesita root: GhostLock sirve)
 #       ./respaldo-efs.sh verificar    revisa que el último respaldo esté sano
 #
-# Estas particiones son únicas de TU teléfono: si se borran, perdés el IMEI y la
-# señal, y no hay de dónde bajarlas. Respaldá antes de cualquier flasheo y
-# sacá la copia del teléfono (a la PC y a otro lado más).
+# Solo LEE: no escribe nada en el teléfono, así que es seguro incluso con el
+# root temporal de GhostLock y el bootloader bloqueado.
+#
+# El módem es único de TU teléfono: si se borra, perdés el IMEI y la señal, y no
+# hay de dónde bajarlo. El arranque de fábrica (anterior a los parches de ZTE)
+# es lo que permite reabrir el unlock más adelante. Sacá la copia del teléfono
+# (a la PC y a otro lado más).
 
 set -euo pipefail
 
@@ -18,7 +22,12 @@ DESTINO_BASE="${DESTINO_BASE:-/sdcard/Arch-Magic/respaldo-efs}"
 
 # modemst1/2 y fsg: IMEI y configuración del módem. fsc: su checksum.
 # persist: calibración de sensores y del lector de huellas.
-PARTICIONES=(modemst1 modemst2 fsg fsc persist)
+MODEM=(modemst1 modemst2 fsg fsc persist)
+# Arranque tal como vino: abl, xbl_config, init_boot, vbmeta, ztecfg (el
+# permiso de unlock, distinto en cada teléfono), uefi, devcfg y boot.
+ARRANQUE=(abl_a abl_b xbl_config_a xbl_config_b init_boot_a init_boot_b
+  vbmeta_a vbmeta_b ztecfg uefi_a uefi_b devcfg_a boot_a)
+PARTICIONES=("${MODEM[@]}" "${ARRANQUE[@]}")
 # Dónde busca las particiones, en orden. Se puede cambiar para probar.
 CARPETAS="${CARPETAS:-/dev/block/by-name /dev/block/bootdevice/by-name}"
 
@@ -54,6 +63,10 @@ respaldar() {
     fi
     decir "Copiando $p…"
     dd if="$dispositivo" of="$destino/$p.img" bs=4M 2>/dev/null
+    # Una copia cortada parece un archivo normal: se compara con el original.
+    if [ "$(sha256sum < "$dispositivo")" != "$(sha256sum < "$destino/$p.img")" ]; then
+      morir "La copia de $p no coincide con el teléfono. Probá de nuevo."
+    fi
   done
 
   if [ "$faltan" -ge "${#PARTICIONES[@]}" ]; then
@@ -66,6 +79,8 @@ respaldar() {
     echo "Fecha: $(date)"
     echo "Modelo: $(getprop ro.product.model 2>/dev/null || echo '?')"
     echo "Firmware: $(getprop ro.build.display.id 2>/dev/null || echo '?')"
+    echo "Huella del build: $(getprop ro.build.fingerprint 2>/dev/null || echo '?')"
+    echo "Kernel: $(uname -r)"
   } > "$destino/info.txt"
 
   (cd "$destino" && sha256sum ./*.img > SHA256SUMS)

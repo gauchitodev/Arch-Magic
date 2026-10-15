@@ -42,7 +42,7 @@ Esto **no** es "una consola de comandos para todo". WhatsApp, la cámara, los ma
 | Modelo | RedMagic 10 Pro (NX789J Global / NX789S China) |
 | SoC | Qualcomm Snapdragon 8 Elite (SM8750) |
 | Extras útiles | Ventilador interno, gatillos de hombro, slider físico, batería 7050 mAh |
-| Firmware probado | _a completar_ |
+| Firmware | RedMagicOS 10.0.9 EEA (Android 15, parche de diciembre de 2024, kernel 6.6.30). **No actualizar** |
 
 ---
 
@@ -56,7 +56,8 @@ Esto **no** es "una consola de comandos para todo". WhatsApp, la cámara, los ma
 - Con root, las apps de banco y pagos pueden dejar de funcionar.
 - Con root, `arch.sh` remonta `/data` con `dev,suid` (si no, `sudo` no anda en Arch). Vale para todo Android hasta reiniciar: es lo que hacen todas las guías de chroot, pero conviene saberlo.
 - El kernel y los drivers siguen siendo los de Android: `pacman -Syu` actualiza el userland de Arch, **no** el piso del sistema.
-- **No actualices el firmware** sin confirmar antes en XDA que la versión nueva no rompe el método de unlock.
+- **No actualices el firmware.** Las versiones nuevas cierran las fallas que usa el unlock. Desactivá el actualizador (`com.zte.zdm`) por `adb`, sin entrar a la pantalla de actualizaciones: ver [`02-root/`](02-root/#paso-0--frenar-las-actualizaciones-hoy).
+- **Desbloquear apaga el lector de huellas** en el RM10: Android deja de verlo y no hay arreglo publicado. Con [GhostLock](02-root/#camino-1--ghostlock-root-temporal-sin-desbloquear) (root temporal, sin desbloquear) la huella sigue andando.
 
 Si no estás dispuesto a perder el teléfono, quedate en las etapas marcadas **sin root**.
 
@@ -73,7 +74,7 @@ El unlock borra todo el teléfono y conviene esperar a confirmar en XDA que tu f
 | Asistente de voz | ✅ botón en la notificación | ✅ los dos gatillos |
 | Teclado en pantalla | ✅ tocando la línea | ✅ con el slider |
 | Cambiar de pantalla de trabajo | ✅ deslizando la línea | ✅ también con los gatillos |
-| `sudo` con huella | — (en proot root es de mentira) | ✅ |
+| `sudo` con huella | — (en proot root es de mentira) | ✅ con GhostLock · ❌ con unlock (Android pierde el lector) |
 
 ```bash
 git clone https://github.com/gauchitodev/Arch-Magic ~/Arch-Magic
@@ -98,7 +99,7 @@ Las etapas 1 a 3 son la base: meter Arch en el teléfono. Las **4 a 6 son la mag
 |---|---|:---:|---|
 | 0 | — | ❌ | Unboxing: anotar firmware, no actualizar, no cargar datos |
 | 1 | `01-debloat/` | ❌ | Sacar basura de fábrica por ADB |
-| 2 | `02-root/` | — | Respaldo del módem, unlock por EDL y parcheo de `init_boot` |
+| 2 | `02-root/` | — | Frenar actualizaciones, root temporal (GhostLock), respaldo y unlock |
 | 3 | `03-chroot/` | ✅ | Arch Linux en chroot (o proot sin root) + Claude Code |
 | 4 | `04-input/` | ✅ | Slider → teclado, gatillos → pantallas y voz, teclado BT |
 | 5 | `05-voice/` | ❌ | Asistente de voz: Whisper + Claude + TTS |
@@ -112,7 +113,7 @@ Las etapas 1 a 3 son la base: meter Arch en el teléfono. Las **4 a 6 son la mag
 
 1. Ajustes → Acerca del teléfono → anotar **versión de firmware**.
 2. Anotar el **IMEI** (`*#06#`) y sacarle foto a la etiqueta de la caja.
-3. No aceptar OTAs todavía.
+3. **Desactivar el actualizador** sin entrar a la pantalla de actualizaciones: ver [`02-root/`](02-root/#paso-0--frenar-las-actualizaciones-hoy).
 4. No configurar cuentas ni cargar datos (el unlock va a borrar todo).
 
 ### Etapa 1 — Debloat (sin root)
@@ -143,13 +144,12 @@ adb shell cmd package install-existing nombre.del.paquete
 
 ### Etapa 2 — Bootloader y root
 
-- **Primero, el respaldo del módem**: la primera sesión en EDL es solo de lectura. Sin respaldo guardado fuera del teléfono, no se sigue. Ver [`02-root/`](02-root/).
-- Herramienta: **ZTE Family Toolbox ≥ 1.2.3** (Windows).
-- Conexión en **modo EDL (9008)**, no fastboot.
-- Guía de referencia: hilo de AdaUnlocked en XDA (ver Créditos).
-- Después del unlock: extraer el `init_boot` de **la misma versión de firmware**, parchearlo con **KernelSU** o **Magisk**, flashearlo y verificar.
+Hay dos formas de tener root, y todo está en [`02-root/`](02-root/):
 
-Pasos exactos: _a completar con la experiencia real_.
+- **GhostLock** — root **temporal** sin desbloquear ni flashear nada. Se mantienen la garantía, el banco y la huella; se repite después de cada reinicio. Depende de que el kernel exacto esté soportado.
+- **Unlock** — root permanente con **ZTE Family Toolbox 1.2.8-beta2** (Windows, modo EDL). Borra todo y apaga el lector de huellas.
+
+Con cualquiera de los dos, antes de flashear nada: **`respaldo-efs.sh`** (módem e IMEI, y el arranque de fábrica), o la Opción 4 del toolbox, que tiene que pesar unos 22 GB.
 
 ### Etapa 3 — Arch Linux
 

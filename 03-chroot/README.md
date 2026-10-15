@@ -31,6 +31,8 @@ cd ~/Arch-Magic/03-chroot
 
 ## Huella digital para sudo
 
+> En el RM10, **desbloquear el bootloader apaga el lector de huellas**: Android deja de verlo y no hay arreglo publicado. La huella para `sudo` anda con root temporal (GhostLock, bootloader bloqueado); con unlock, `sudo` cae siempre a la contraseña. Ver [`02-root/`](../02-root/#lo-que-se-pierde).
+
 Linux no puede leer el sensor de huellas: lo maneja Android. Así que se hace un puente:
 
 ```
