@@ -4,7 +4,7 @@
 # 🚧 Bosquejo: escrito antes de que llegue el teléfono, sin probar.
 #
 # Antes: en Termux, `termux-x11 :0 &` y abrir la app Termux:X11.
-# Después, adentro de Arch:  ~/Arch-Magic/sway/iniciar.sh
+# Después, adentro de Arch:  /opt/arch-magic/sway/iniciar.sh
 
 # En /tmp para que el demonio de entradas (04-input) encuentre el socket de
 # Sway desde afuera del chroot.

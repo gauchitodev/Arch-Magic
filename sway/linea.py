@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """✦ Arch-Magic — la línea de abajo, como la de Motorola.
 
-🚧 Bosquejo: escrito antes de que llegue el teléfono, sin probar.
+🚧 Sin probar en el teléfono. Probado en una PC con Sway sin GPU y un dedo
+virtual: se dibuja, reserva su lugar y los cuatro gestos andan.
 
 Una rayita violeta pegada al borde de abajo de la pantalla:
 
@@ -23,6 +24,7 @@ import subprocess
 import gi
 
 gi.require_version("Gtk", "3.0")
+gi.require_version("Gdk", "3.0")
 gi.require_version("GtkLayerShell", "0.1")
 from gi.repository import Gdk, Gtk, GtkLayerShell  # noqa: E402
 

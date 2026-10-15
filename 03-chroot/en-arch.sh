@@ -48,7 +48,8 @@ en_proot() {
   # --shared-tmp: el /tmp de Arch es el de Termux, así se ve el socket de
   # Termux:X11. Igual que en el chroot, de /sdcard solo se comparte una carpeta.
   mkdir -p "$COMPARTIDA_ANDROID" 2>/dev/null || true
-  local opciones=(--user "$ARCH_USUARIO" --shared-tmp)
+  # El repo se ve en /opt/arch-magic, igual que en el chroot.
+  local opciones=(--user "$ARCH_USUARIO" --shared-tmp --bind "$(dirname "$AQUI"):/opt/arch-magic")
   [ -d "$COMPARTIDA_ANDROID" ] && opciones+=(--bind "$COMPARTIDA_ANDROID:/mnt/android")
 
   if [ $# -eq 0 ]; then

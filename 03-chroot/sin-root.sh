@@ -30,11 +30,14 @@ instalar() {
   pkg update -y
   pkg install -y proot-distro x11-repo
   pkg install -y termux-x11-nightly pulseaudio
+  # Lo que usan el asistente de voz y la huella (más la app Termux:API).
+  pkg install -y termux-api jq ffmpeg socat curl git
 
   decir "Instalando Arch (proot-distro ya deja pacman listo)…"
   proot-distro install "$PROOT_DISTRO"
 
   decir "Listo. Seguí con: ./sin-root.sh configurar"
+  decir "Para la voz falta whisper.cpp: ver 05-voice/README.md"
 }
 
 configurar() {

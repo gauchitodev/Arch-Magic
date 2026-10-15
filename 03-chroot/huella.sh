@@ -22,15 +22,18 @@ SOCKET="$DIR/huella.sock"
 
 # Atiende un pedido. socat conecta la entrada y la salida al socket.
 responder() {
-  local usuario servicio resultado
-  read -r -t 5 usuario servicio || { echo NO; return; }
-  # Solo letras simples: esto se muestra en pantalla.
+  local usuario servicio comando resultado
+  read -r -t 5 usuario servicio comando || { echo NO; return; }
+  # Solo caracteres simples: esto se muestra en pantalla.
   usuario="${usuario//[^a-zA-Z0-9_-]/}"
   servicio="${servicio//[^a-zA-Z0-9_-]/}"
+  # Lo raro se cambia por ? en vez de borrarlo, para que no cambie el sentido.
+  comando="${comando//[^a-zA-Z0-9 _.\/=:+-]/?}"
+  [ ${#comando} -gt 80 ] && comando="${comando:0:77}..."
 
   resultado=$(termux-fingerprint \
     -t "✦ Arch-Magic" \
-    -d "$usuario quiere usar $servicio" \
+    -d "$usuario quiere usar $servicio${comando:+: $comando}" \
     -c "Usar contraseña" 2>/dev/null) || { echo NO; return; }
 
   if [ "$(jq -r '.auth_result' <<<"$resultado" 2>/dev/null)" = AUTH_RESULT_SUCCESS ]; then

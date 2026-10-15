@@ -54,6 +54,7 @@ Esto **no** es "una consola de comandos para todo". WhatsApp, la cámara, los ma
 - En el 10 Pro, ZTE **deshabilitó** `fastboot flashing unlock`. El único método conocido usa **modo EDL (9008)** con ZTE Family Toolbox. EDL mal usado = ladrillo.
 - **Nunca** flashees un `vbmeta` para deshabilitar AVB desde fastboot: deja el equipo en bootloop y solo se recupera por EDL.
 - Con root, las apps de banco y pagos pueden dejar de funcionar.
+- Con root, `arch.sh` remonta `/data` con `dev,suid` (si no, `sudo` no anda en Arch). Vale para todo Android hasta reiniciar: es lo que hacen todas las guías de chroot, pero conviene saberlo.
 - El kernel y los drivers siguen siendo los de Android: `pacman -Syu` actualiza el userland de Arch, **no** el piso del sistema.
 - **No actualices el firmware** sin confirmar antes en XDA que la versión nueva no rompe el método de unlock.
 
@@ -275,6 +276,8 @@ swaymsg reload
 ```
 
 Abajo de todo va una **línea de gestos como la de Motorola**: deslizás a los costados para cambiar de pantalla de trabajo y para arriba para el menú de apps. Detalles en [`sway/`](sway/).
+
+En Termux:X11 hay que poner el toque en modo **pantalla táctil directa** (no touchpad), si no la línea no recibe los deslizamientos. Y si Sway va lento (dibuja por CPU), bajarle la resolución desde las preferencias de Termux:X11.
 
 Respaldo si Sway anidado no rinde: i3 sobre Termux:X11.
 

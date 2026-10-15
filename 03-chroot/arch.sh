@@ -28,6 +28,10 @@ ARCH_ZONA="${ARCH_ZONA:-America/Montevideo}"
 COMPARTIDA_ANDROID="${COMPARTIDA_ANDROID:-/sdcard/Arch-Magic}"
 COMPARTIDA_ARCH="/mnt/android"
 
+# Este repo, visto desde adentro de Arch: así Sway y compañía usan los mismos
+# scripts que Termux, sin clonar dos veces.
+REPO_ARCH="/opt/arch-magic"
+
 TERMUX="/data/data/com.termux/files"
 TERMUX_BIN="$TERMUX/usr/bin"
 
@@ -37,6 +41,7 @@ HUELLA_ARCH="/run/arch-magic"
 
 AQUI="$(cd "$(dirname "$0")" && pwd)"
 ESTE="$AQUI/$(basename "$0")"
+REPO="$(dirname "$AQUI")"
 
 # --- Utilidades --------------------------------------------------------------
 
@@ -104,6 +109,10 @@ montar_todo() {
   # Android monta /data con nosuid y nodev: sin esto sudo no funciona.
   mount -o remount,dev,suid /data
 
+  # La raíz montada sobre sí misma: pacman revisa el espacio libre buscando el
+  # punto de montaje de /, y sin esto no lo encuentra (lo mismo hace arch-chroot).
+  montado "$ARCH_RAIZ" || mount --bind "$ARCH_RAIZ" "$ARCH_RAIZ"
+
   montar "$ARCH_RAIZ/proc"     -t proc proc
   montar "$ARCH_RAIZ/sys"      -t sysfs sysfs
   montar "$ARCH_RAIZ/dev"      --bind /dev
@@ -123,6 +132,11 @@ montar_todo() {
 
   mkdir -p "$COMPARTIDA_ANDROID"
   montar "$ARCH_RAIZ$COMPARTIDA_ARCH" --bind "$COMPARTIDA_ANDROID"
+  # El repo es del usuario de Termux. Tu usuario de Arch lo tiene que poder leer
+  # (no escribir): no se le da el mismo número de usuario que a Termux porque
+  # entonces podría meterse en la carpeta del socket de la huella.
+  chmod -R a+rX "$REPO"
+  montar "$ARCH_RAIZ$REPO_ARCH" --bind "$REPO"
 
   # Carpeta del socket de huella.sh. La creamos nosotros (root), pero tiene que
   # ser del usuario de Termux, que es quien pone el socket.
@@ -166,6 +180,38 @@ configurar() {
   decir "Llaves de pacman y actualización…"
   en_arch pacman-key --init
   en_arch pacman-key --populate archlinuxarm
+
+  # Cada vez que pacman instala algo, systemd-tmpfiles arregla dueños y permisos
+  # de dispositivos. Acá /dev y /sys son los de Android: le cambiaría los
+  # permisos al sonido y compañía hasta reiniciar (visto en la prueba en PC).
+  # Este hook pisa al de fábrica (mismo nombre) y deja afuera /dev, /sys y /proc.
+  mkdir -p "$ARCH_RAIZ/etc/pacman.d/hooks"
+  sed 's|^Exec = .*|Exec = /usr/bin/systemd-tmpfiles --create --exclude-prefix=/dev --exclude-prefix=/sys --exclude-prefix=/proc|' \
+    "$ARCH_RAIZ/usr/share/libalpm/hooks/21-systemd-tmpfiles.hook" \
+    > "$ARCH_RAIZ/etc/pacman.d/hooks/21-systemd-tmpfiles.hook"
+
+  # La imagen trae kernel, firmware y mkinitcpio para placas como la Raspberry.
+  # Acá el kernel es el de Android: afuera, así -Syu no baja cientos de MB al
+  # pedo ni arma un initramfs que nadie usa.
+  decir "Sacando kernel y firmware que en Android no se usan…"
+  en_arch bash -c '
+    sobra=$(pacman -Qq | grep -E "^(linux-aarch64|linux-firmware.*|mkinitcpio.*)$" || true)
+    [ -z "$sobra" ] || pacman -Rns --noconfirm $sobra
+  '
+
+  # pacman 7 se encierra con Landlock al descargar. Si el kernel no lo deja
+  # (no alcanza con mirar /sys: puede decir que sí y fallar igual), pacman no
+  # descarga nada. Se prueba de verdad y, si falla por eso, se apaga el encierro.
+  local prueba
+  if ! prueba=$(en_arch pacman -Sy 2>&1); then
+    if grep -q Landlock <<<"$prueba"; then
+      avisar "El kernel no deja usar Landlock: pacman va sin sandbox."
+      sed -i '/^\[options\]/a DisableSandbox' "$ARCH_RAIZ/etc/pacman.conf"
+    else
+      echo "$prueba" >&2
+      morir "pacman no pudo descargar. Mirá 'Si algo falla' en el README."
+    fi
+  fi
   en_arch pacman -Syu --noconfirm
   en_arch pacman -S --noconfirm --needed sudo git curl base-devel
 
@@ -202,6 +248,7 @@ desmontar() {
   # Orden inverso: primero lo más adentro.
   local destinos=(
     "$ARCH_RAIZ$HUELLA_ARCH"
+    "$ARCH_RAIZ$REPO_ARCH"
     "$ARCH_RAIZ$COMPARTIDA_ARCH"
     "$ARCH_RAIZ/tmp/.X11-unix"
     "$ARCH_RAIZ/tmp"
@@ -210,13 +257,16 @@ desmontar() {
     "$ARCH_RAIZ/dev"
     "$ARCH_RAIZ/sys"
     "$ARCH_RAIZ/proc"
+    "$ARCH_RAIZ"
   )
   local d
   for d in "${destinos[@]}"; do
     montado "$d" || continue
     umount "$d" 2>/dev/null || {
       avisar "$d está ocupado, lo desmonto en diferido."
-      umount -l "$d"
+      # Si ni así se puede, avisar y seguir con el resto: cortar acá dejaría
+      # todo lo demás montado.
+      umount -l "$d" 2>/dev/null || avisar "No pude desmontar $d."
     }
   done
   decir "Desmontado."

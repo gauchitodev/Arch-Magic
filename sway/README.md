@@ -2,7 +2,7 @@
 
 Sway corriendo adentro de Arch y dibujando en Termux:X11.
 
-> 🚧 Bosquejo: escrito antes de que llegue el teléfono, sin probar.
+> 🚧 Sin probar en el teléfono. En una PC (13/10), con Sway sin GPU (pixman) a 1080×2400 y un dedo virtual: la línea se dibuja y reserva su lugar, los cuatro gestos hacen lo que dicen, y `default_orientation auto` apila en vertical en el teléfono y pone lado a lado en un monitor de 2560×1440.
 
 | Archivo | Qué es |
 |---|---|
@@ -28,16 +28,22 @@ Mientras arrastrás, la rayita sigue al dedo. Hace lo mismo que los gatillos, pe
 
 [wvkbd](https://github.com/jjsullivan5196/wvkbd) arranca escondido. Sin root, aparece y desaparece tocando la línea de abajo. Con root, también con el slider (ver [`04-input/`](../04-input/)). Está en AUR como `wvkbd`.
 
-> A verificar en el teléfono: que wvkbd alterne con `SIGRTMIN` (el toque de la línea) y que se muestre y esconda con `SIGUSR2` y `SIGUSR1` (el slider).
+Probado en una PC (13/10) con wvkbd 0.20: arranca escondido; tocar la línea lo muestra y lo esconde (`SIGRTMIN`); `SIGUSR2` lo muestra y `SIGUSR1` lo esconde (el slider), y mandar `SIGUSR2` dos veces no lo rompe. Cuando aparece, la línea se corre sola arriba del teclado, así que se puede seguir tocando. Las teclas escriben en la ventana con foco.
+
+> A verificar en el teléfono: en la PC se perdió **la primera tecla** después de arrancar wvkbd (las siguientes entraron todas). Es un detalle conocido de los teclados virtuales en Wayland; si en el teléfono pasa seguido, se busca arreglo.
 
 ## Instalación (adentro de Arch)
 
 ```bash
-sudo pacman -S sway wofi python-gobject gtk3 gtk-layer-shell
+sudo pacman -S sway wofi foot python-gobject gtk3 gtk-layer-shell
 # wvkbd desde AUR
 mkdir -p ~/.config/sway
-cp ~/Arch-Magic/sway/{linea.py,arch-magic.conf} ~/.config/sway/
-echo 'include ~/.config/sway/arch-magic.conf' >> ~/.config/sway/config
+cp /etc/sway/config ~/.config/sway/config
+echo 'include /opt/arch-magic/sway/arch-magic.conf' >> ~/.config/sway/config
 ```
 
-Para arrancar, desde Termux: `~/Arch-Magic/sway/escritorio.sh`. Necesita el repo clonado también adentro de Arch, en `~/Arch-Magic` (o decile dónde con `REPO_EN_ARCH`).
+El repo no hace falta clonarlo adentro de Arch: `arch.sh` y `en-arch.sh` lo muestran en `/opt/arch-magic`. Un `git pull` en Termux y Sway ya usa lo nuevo.
+
+Para arrancar, desde Termux: `~/Arch-Magic/sway/escritorio.sh`.
+
+En Termux:X11, poné el toque en modo **pantalla táctil directa**: en modo touchpad la línea no recibe los deslizamientos.

@@ -2,7 +2,7 @@
 
 Arch Linux ARM corriendo sobre el kernel de Android, casi nativo y con acceso real al hardware. **Requiere root** (Etapa 2).
 
-> 🚧 Escrito antes de que llegue el teléfono. La lógica de montaje está probada en una PC, pero en el RedMagic todavía no. Cuando lo esté, este aviso desaparece.
+> 🚧 Escrito antes de que llegue el teléfono. Probado en una PC (13/10) con la imagen real de Arch Linux ARM emulada con qemu, en un espacio aislado sin root: `instalar`, `configurar` (unos 3 minutos), `huella`, `entrar` y `desmontar`. `sudo` con huella se probó con PAM de verdad sobre un Arch de PC (qemu no respeta el setuid de sudo). En el RedMagic todavía no: cuando lo esté, este aviso desaparece.
 
 ## Uso
 
@@ -43,13 +43,13 @@ pkg install termux-api socat jq   # y la app Termux:API de F-Droid
 ./huella.sh                       # dejarlo corriendo (o con Termux:Boot)
 ```
 
-Cuando hagas `sudo` en Arch, aparece el cartel de Android con quién lo pide. Ponés el dedo y listo.
+Cuando hagas `sudo` en Arch, aparece el cartel de Android con quién lo pide y **qué comando** quiere correr (por ejemplo `gauchito quiere usar sudo: sudo pacman -Syu`). Así, si Claude Code pide `sudo`, sabés para qué antes de poner el dedo. Los caracteres raros se muestran como `?`, para que un comando tramposo no se disfrace de otro.
 
 **La contraseña nunca deja de andar.** Si la huella falla, si tocás "Usar contraseña", si pasan 30 segundos o si `huella.sh` no está corriendo, sudo te pide la contraseña como siempre. Para volver a solo contraseña: `./arch.sh huella quitar`.
 
 Por qué no se puede trampear desde Arch: el socket vive en una carpeta que es del usuario de Termux con permisos `700`. Los usuarios de Arch no pueden ni mirarla, así que no pueden poner un socket falso que conteste "OK". Solo root (o sea, sudo) llega.
 
-Probado en una PC con `sudo` y PAM de verdad y un sensor de mentira: huella buena entra sin contraseña, huella mala cae a la contraseña, y sin demonio también. En esa prueba apareció que `pam_exec` corre el programa como el usuario y no como root, por eso la regla lleva `seteuid`.
+Probado en una PC con `sudo` y PAM de verdad y un sensor de mentira: huella buena entra sin contraseña, huella mala cae a la contraseña, y sin demonio también. Vuelto a probar el 13/10 con el comando en el cartel: huella buena, mala, sin demonio y huella que tarda demasiado. En esa prueba apareció que `pam_exec` corre el programa como el usuario y no como root, por eso la regla lleva `seteuid`.
 
 ## Configuración
 
@@ -76,6 +76,7 @@ ARCH_USUARIO=franco ./arch.sh configurar
 | `/dev/shm`, `/tmp` | RAM | Temporales; se borran al desmontar |
 | `/tmp/.X11-unix` | Termux:X11 | Que Sway pueda dibujar en `DISPLAY=:0` |
 | `/mnt/android` | `/sdcard/Arch-Magic` | **La única** carpeta compartida con Android |
+| `/opt/arch-magic` | Este repo (en Termux) | Que Sway y compañía usen los mismos scripts, sin clonar dos veces. Tu usuario de Arch lo puede leer, no escribir |
 | `/run/arch-magic` | Termux | El socket de la huella para `sudo` (solo lo ve root) |
 
 El resto de `/sdcard` y las particiones de Android **no se ven** desde Arch. Es a propósito: Claude Code trabaja ahí adentro y no tiene por qué tocar tus fotos.
@@ -83,6 +84,10 @@ El resto de `/sdcard` y las particiones de Android **no se ven** desde Arch. Es 
 ## Detalles de Android que el script resuelve
 
 - **`/data` viene con `nosuid`**: sin remontarlo, `sudo` no funciona. El script lo remonta con `dev,suid`.
+- **pacman no encuentra el punto de montaje de `/`** al revisar el espacio libre: el script monta la raíz de Arch sobre sí misma, como hace `arch-chroot`.
+- **pacman 7 se encierra con Landlock** y el kernel de Android puede no dejarlo: `configurar` prueba `pacman -Sy` y, si falla por eso, agrega `DisableSandbox` solo. (Mirar `/sys/kernel/security/lsm` no alcanza: en la prueba en PC decía que sí y pacman falló igual.)
+- **pacman toca `/dev` y `/sys` sin avisar**: cada vez que instala algo, `systemd-tmpfiles` arregla dueños y permisos de dispositivos (sonido, `/dev/kvm`, `/dev/loop-control`…). Acá son los de Android, así que podría romper el sonido de Android hasta reiniciar. `configurar` pone un hook en `/etc/pacman.d/hooks/` que hace lo mismo pero deja afuera `/dev`, `/sys` y `/proc`. Apareció en la prueba en PC.
+- **La imagen trae kernel, firmware y mkinitcpio** para placas como la Raspberry. En Android no sirven: `configurar` los saca antes de actualizar (1,3 GB menos).
 - **No hay `/etc/resolv.conf`**: Android resuelve DNS por otro lado. Se escribe uno con 1.1.1.1 y 8.8.8.8.
 - **Red restringida por grupo**: el kernel de Android solo deja usar internet a los grupos `aid_inet` (3003) y `aid_net_raw` (3004). Se crean en Arch y se agregan root, tu usuario y `alpm`, que es con el que pacman descarga.
 - **Los montajes se pierden entre sesiones de su**: el script usa `su --mount-master` (Magisk y KernelSU) para que queden en el espacio de nombres global.
@@ -90,7 +95,7 @@ El resto de `/sdcard` y las particiones de Android **no se ven** desde Arch. Es 
 ## Si algo falla
 
 - **pacman no descarga nada** (`failed retrieving file`): revisá que `alpm` esté en `aid_inet` con `id alpm`. Si sigue fallando, en `/etc/pacman.conf` comentá `DownloadUser = alpm`.
-- **pacman se queja del sandbox** (Landlock): agregá `DisableSandbox` en la sección `[options]` de `/etc/pacman.conf`.
+- **pacman se queja del sandbox** (Landlock) igual: revisá que `DisableSandbox` esté en la sección `[options]` de `/etc/pacman.conf`.
 - **`sudo: effective uid is not 0`**: `/data` quedó con `nosuid`. Salí y volvé a entrar con `./arch.sh entrar`.
 - **`desmontar` dice que algo está ocupado**: hay un proceso de Arch todavía corriendo. Lo desmonta en diferido igual, pero conviene cerrar todo antes.
 
@@ -104,7 +109,7 @@ Mientras no haya root (o si no querés rootear): Arch con `proot-distro`. Es má
 ./en-arch.sh               # consola en Arch
 ```
 
-Igual que con root, de `/sdcard` solo se ve `/sdcard/Arch-Magic` (en `/mnt/android`). El `/tmp` es el de Termux, para que Sway encuentre a Termux:X11.
+Igual que con root, de `/sdcard` solo se ve `/sdcard/Arch-Magic` (en `/mnt/android`) y el repo aparece en `/opt/arch-magic`. El `/tmp` es el de Termux, para que Sway encuentre a Termux:X11.
 
 En proot, `sudo` no pide contraseña: root es de mentira y no puede tocar Android, así que no hay nada que proteger. Si `sudo` se queja de permisos (pasa en algunos proot), entrá como root con `ARCH_USUARIO=root ./en-arch.sh`.
 
