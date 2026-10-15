@@ -12,6 +12,7 @@
 #   com.zte.mifavor.launcher*                     launcher, hasta tener el propio
 #   com.zte.fingerprints, com.fingerprint.*        huella
 #   com.google.*                                  las apps de Google se quedan todas
+#   com.android.egg                               el Easter egg de Android: intocable
 
 # --- Actualizaciones de ZTE (com.zte.zdm ya está desactivado aparte) ---------
 com.zte.zdmdaemon             # demonio del actualizador
@@ -29,7 +30,6 @@ com.zte.weather               # clima
 com.zte.nebulatranslation     # traductor
 
 # --- Adornos ------------------------------------------------------------------
-com.android.egg               # el huevito de Pascua de Android
 com.android.dreams.basic      # protector de pantalla
 com.android.dreams.phototable # protector de pantalla con fotos
 
