@@ -1,7 +1,7 @@
 #!/data/data/com.termux/files/usr/bin/bash
 # ✦ Arch-Magic — sacar lo que sobra de RedMagic OS, sin romper nada
 #
-# Uso:  ./debloat.sh listar               guarda qué apps trae el teléfono
+# Uso:  ./debloat.sh listar               guarda qué apps trae de fábrica
 #       ./debloat.sh sacar [lista]        saca las de la lista (por defecto sacar.txt)
 #       ./debloat.sh restaurar [paquete]  vuelve a poner todo lo sacado, o uno
 #
@@ -47,14 +47,14 @@ listar() {
 
   # package:/ruta/base.apk=nombre  →  nombre  ruta
   {
-    echo "# Apps de $firmware ($(date +%Y-%m-%d)). Ruta: dónde vive la app."
-    echo "# /data = la instalaste vos; /system, /product, /vendor... = vino de fábrica."
-    pm_root "list packages -f" | sed 's/^package://' \
+    # Solo las de fábrica (-s): las que instalaste vos no van al repo.
+    echo "# Apps de fábrica de $firmware ($(date +%Y-%m-%d)) y dónde viven."
+    pm_root "list packages -f -s" | sed 's/^package://' \
       | awk '{ i = index($0, ".apk="); printf "%-55s %s\n", substr($0, i + 5), substr($0, 1, i + 3) }' \
       | sort
   } > "$salida"
 
-  decir "$(grep -vc '^#' "$salida") apps guardadas en $salida"
+  decir "$(grep -vc '^#' "$salida") apps de fábrica guardadas en $salida"
 }
 
 sacar() {
