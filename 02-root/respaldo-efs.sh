@@ -1,8 +1,8 @@
 #!/data/data/com.termux/files/usr/bin/bash
 # ✦ Arch-Magic — respaldo del módem (IMEI) y del arranque de fábrica
 #
-# 🚧 Bosquejo: escrito antes de que llegue el teléfono. Probado en una PC con
-# particiones de mentira.
+# ✅ Probado en el teléfono (RM10 Pro, 10.0.9 EEA, root de GhostLock, 15/10/2026):
+# las 18 particiones se copiaron y coincidieron con el original.
 #
 # Uso:  ./respaldo-efs.sh              respalda (necesita root: GhostLock sirve)
 #       ./respaldo-efs.sh verificar    revisa que el último respaldo esté sano

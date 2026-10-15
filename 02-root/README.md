@@ -90,6 +90,8 @@ Qué guarda:
 | Módem | `modemst1`, `modemst2`, `fsg`, `fsc`, `persist` | IMEI, señal y calibración. Únicas de este teléfono: si se borran, no hay de dónde bajarlas |
 | Arranque de fábrica | `abl`, `xbl_config`, `init_boot`, `vbmeta`, `ztecfg`, `uefi`, `devcfg`, `boot` | Las versiones de **antes de los parches** son las que permiten reabrir el unlock más adelante. `ztecfg` es el permiso de unlock y es distinto en cada teléfono |
 
+✅ Probado en este teléfono con el root de GhostLock: las 18 particiones se copiaron y coincidieron con el original.
+
 Compara cada copia con el teléfono (una copia cortada parece un archivo normal), anota modelo, firmware y kernel en `info.txt`, y guarda un `SHA256SUMS`. **Después sacalo del teléfono**: a la PC y a un segundo lugar.
 
 Nunca restaures el módem en otro teléfono: el IMEI es de este y ponerlo en otro es ilegal.
