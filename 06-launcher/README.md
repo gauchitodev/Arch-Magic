@@ -26,4 +26,4 @@ cp 06-launcher/arcano.kvtheme /sdcard/Download/
 
 Después, en Kvaesitso: **Ajustes → Apariencia → Importar tema** → `Download/arcano.kvtheme` → **Aplicar**.
 
-Armado con el formato del código de Kvaesitso (v1.41, `ThemeBundle` versión 2). Todos los textos tienen contraste de 5:1 o más contra su fondo.
+Armado con el formato del código de Kvaesitso (v1.41, `ThemeBundle` versión 2). Todos los textos tienen contraste de 4.5:1 o más contra su fondo (el mínimo recomendado para leer bien).
