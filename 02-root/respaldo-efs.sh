@@ -18,6 +18,9 @@
 set -euo pipefail
 
 TERMUX_BIN="/data/data/com.termux/files/usr/bin"
+# El su de verdad. KernelSU (y GhostLock) atrapan esta ruta aunque el archivo no
+# exista, y Magisk también la usa; el `su` de Termux no la encuentra.
+SU="${SU:-/system/bin/su}"
 DESTINO_BASE="${DESTINO_BASE:-/sdcard/Arch-Magic/respaldo-efs}"
 
 # modemst1/2 y fsg: IMEI y configuración del módem. fsc: su checksum.
@@ -37,8 +40,8 @@ morir() { printf '\e[31m✗\e[0m %s\n' "$*" >&2; exit 1; }
 
 como_root() {
   [ "$(id -u)" = 0 ] && return
-  command -v su >/dev/null || morir "Hace falta root. Antes del root, el respaldo se hace por EDL (ver README)."
-  exec su -c "$(printf '%q ' env "DESTINO_BASE=$DESTINO_BASE" "CARPETAS=$CARPETAS" \
+  "$SU" -c true >/dev/null 2>&1 || morir "Hace falta root. Antes del root, el respaldo se hace por EDL (ver README)."
+  exec "$SU" -c "$(printf '%q ' env "DESTINO_BASE=$DESTINO_BASE" "CARPETAS=$CARPETAS" \
     "$TERMUX_BIN/bash" "$(cd "$(dirname "$0")" && pwd)/$(basename "$0")" "$@")"
 }
 

@@ -60,7 +60,8 @@ uname -r
 
 1. Instalar la app **GhostLock** y **KernelSU** (`me.weishu.kernelsu`), que es el que administra el root.
 2. Abrir GhostLock → **Run**. Si el teléfono se reinicia, perdió la carrera: es normal, se prueba de nuevo.
-3. En KernelSU, darle root a **Termux**.
+3. En KernelSU → **Superusuario**, activar **Termux** (KernelSU no pregunta solo como Magisk: hay que darle permiso a mano).
+4. En Termux, el root se pide con la ruta completa: `/system/bin/su -c id` tiene que dar `uid=0(root)`. El `su` a secas de Termux busca un archivo que con KernelSU no existe y dice *"No su program found"*; los scripts del repo ya usan `/system/bin/su`.
 
 ### ⛔ Reglas para no brickear
 

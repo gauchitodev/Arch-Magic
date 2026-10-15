@@ -34,6 +34,9 @@ REPO_ARCH="/opt/arch-magic"
 
 TERMUX="/data/data/com.termux/files"
 TERMUX_BIN="$TERMUX/usr/bin"
+# El su de verdad. KernelSU (y GhostLock) atrapan esta ruta aunque el archivo no
+# exista, y Magisk también la usa; el `su` de Termux no la encuentra.
+SU="${SU:-/system/bin/su}"
 
 # Socket de huella.sh: en Termux de un lado, /run/arch-magic del otro.
 HUELLA_TERMUX="$TERMUX/usr/tmp/arch-magic"
@@ -58,7 +61,7 @@ morir() { printf '%s✗%s %s\n' "$rojo" "$normal" "$*" >&2; exit 1; }
 # montajes queden en el espacio de nombres global y no se pierdan al salir.
 como_root() {
   [ "$(id -u)" = 0 ] && return
-  command -v su >/dev/null || morir "No hay su. ¿El teléfono tiene root?"
+  "$SU" -c true >/dev/null 2>&1 || morir "No hay su. ¿El teléfono tiene root?"
   local linea
   linea=$(printf '%q ' env \
     "ARCH_RAIZ=$ARCH_RAIZ" "ARCH_URL=$ARCH_URL" "ARCH_USUARIO=$ARCH_USUARIO" \
@@ -66,11 +69,11 @@ como_root() {
     "COMPARTIDA_ANDROID=$COMPARTIDA_ANDROID" "TERM=${TERM:-xterm-256color}" \
     "$TERMUX_BIN/bash" "$ESTE" "$@")
   # Magisk y KernelSU entienden --mount-master; si este su no, va sin él.
-  if su --mount-master -c true >/dev/null 2>&1; then
-    exec su --mount-master -c "$linea"
+  if "$SU" --mount-master -c true >/dev/null 2>&1; then
+    exec "$SU" --mount-master -c "$linea"
   fi
   avisar "Este su no acepta --mount-master: los montajes pueden no verse desde otras apps."
-  exec su -c "$linea"
+  exec "$SU" -c "$linea"
 }
 
 montado() { grep -q " $1 " /proc/mounts; }
