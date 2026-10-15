@@ -11,6 +11,7 @@
 #   com.zte.thermald, com.zte.thermalbridge       temperatura (¡nunca!)
 #   com.zte.mifavor.launcher*                     launcher, hasta tener el propio
 #   com.zte.fingerprints, com.fingerprint.*        huella
+#   com.google.*                                  las apps de Google se quedan todas
 
 # --- Actualizaciones de ZTE (com.zte.zdm ya está desactivado aparte) ---------
 com.zte.zdmdaemon             # demonio del actualizador
@@ -26,12 +27,6 @@ com.zte.recommend             # recomendaciones de apps (publicidad)
 com.zte.nubrowser             # navegador de ZTE (queda Chrome)
 com.zte.weather               # clima
 com.zte.nebulatranslation     # traductor
-
-# --- Google que casi nadie usa -----------------------------------------------
-com.google.android.apps.tachyon        # Meet (ex Duo)
-com.google.android.videos              # Google TV / Play Películas
-com.google.android.apps.youtube.music  # YouTube Music
-com.google.android.feedback            # envío de reportes a Google
 
 # --- Adornos ------------------------------------------------------------------
 com.android.egg               # el huevito de Pascua de Android
