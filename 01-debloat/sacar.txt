@@ -1,0 +1,54 @@
+# ✦ Arch-Magic — qué sacar de RedMagicOS 10.0.9 EEA (NX789J)
+#
+# Una app por línea. Lo que va después de # es comentario; las líneas que
+# empiezan con # no se aplican (son las opcionales: sacales el # para sumarlas).
+#
+# Primera ronda, conservadora: solo lo que es claramente de más.
+# NO están acá, a propósito, y no conviene sacarlas:
+#   cn.nubia.fan, cn.nubia.colorfullight         ventilador y luces
+#   cn.nubia.gamelauncher, cn.nubia.keymapcenter, com.zte.game.plugintrigger,
+#   cn.nubia.virtualgamehandle, cn.zte.gamefloat  Game Space, gatillos y mapeo
+#   com.zte.thermald, com.zte.thermalbridge       temperatura (¡nunca!)
+#   com.zte.mifavor.launcher*                     launcher, hasta tener el propio
+#   com.zte.fingerprints, com.fingerprint.*        huella
+
+# --- Actualizaciones de ZTE (com.zte.zdm ya está desactivado aparte) ---------
+com.zte.zdmdaemon             # demonio del actualizador
+com.zte.zdmdaemon.install     # el que instala las actualizaciones
+com.zte.zdm.omacp             # configuración de actualizaciones por SMS del operador
+
+# --- Publicidad y servicios de Facebook --------------------------------------
+com.facebook.services         # Facebook preinstalado (corre en segundo plano)
+com.facebook.system           # instalador de Facebook
+com.zte.recommend             # recomendaciones de apps (publicidad)
+
+# --- Apps de ZTE que repiten lo que ya hace Google ---------------------------
+com.zte.nubrowser             # navegador de ZTE (queda Chrome)
+com.zte.weather               # clima
+com.zte.nebulatranslation     # traductor
+
+# --- Google que casi nadie usa -----------------------------------------------
+com.google.android.apps.tachyon        # Meet (ex Duo)
+com.google.android.videos              # Google TV / Play Películas
+com.google.android.apps.youtube.music  # YouTube Music
+com.google.android.feedback            # envío de reportes a Google
+
+# --- Adornos ------------------------------------------------------------------
+com.android.egg               # el huevito de Pascua de Android
+com.android.dreams.basic      # protector de pantalla
+com.android.dreams.phototable # protector de pantalla con fotos
+
+# --- Opcionales: sacales el # si no las usás --------------------------------
+# com.zte.livewallpaper              # fondos animados de ZTE
+# cn.nubia.inspiredwallpaper         # fondos de RedMagic
+# com.zte.storagecleanup             # limpiador de almacenamiento
+# com.zte.cn.doubleapp               # apps duplicadas (dos WhatsApp)
+# com.zte.privacyzone                # zona privada
+# cn.nubia.touping                   # transmitir pantalla
+# com.google.android.apps.docs       # Google Drive
+# com.google.android.keep            # Google Keep
+# com.google.android.projection.gearhead  # Android Auto
+# com.android.aftersaleservice       # pruebas del servicio técnico
+# com.westalgo.aftersalecamera       # prueba de cámara del servicio técnico
+# com.zte.burntest.camera            # prueba de cámara de fábrica
+# android.autoinstalls.config.nubia.NX789J_EEA_NUBIA  # instala apps de socios al configurar
