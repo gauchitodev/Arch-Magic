@@ -20,11 +20,14 @@ ARCH_RAIZ="${ARCH_RAIZ:-/data/local/arch}"
 ARCH_USUARIO="${ARCH_USUARIO:-gauchito}"
 PROOT_DISTRO="${PROOT_DISTRO:-archlinux}"
 COMPARTIDA_ANDROID="${COMPARTIDA_ANDROID:-/sdcard/Arch-Magic}"
+# El su de verdad. KernelSU (y GhostLock) atrapan esta ruta aunque el archivo no
+# exista, y Magisk también la usa; el `su` de Termux no la encuentra.
+SU="${SU:-/system/bin/su}"
 
 modo() {
   if [ "$ARCH_MODO" != auto ]; then
     echo "$ARCH_MODO"
-  elif command -v su >/dev/null && su -c "test -x $ARCH_RAIZ/usr/bin/pacman" 2>/dev/null; then
+  elif "$SU" -c "test -x $ARCH_RAIZ/usr/bin/pacman" 2>/dev/null; then
     echo chroot
   else
     echo proot
@@ -41,7 +44,7 @@ en_chroot() {
   fi
   local orden
   orden=$(printf '%q ' "$@")
-  exec su -c "chroot $ARCH_RAIZ /usr/bin/su - $ARCH_USUARIO -c $(comillas "$orden")"
+  exec "$SU" -c "chroot $ARCH_RAIZ /usr/bin/su - $ARCH_USUARIO -c $(comillas "$orden")"
 }
 
 en_proot() {

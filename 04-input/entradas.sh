@@ -19,6 +19,9 @@ set -euo pipefail
 AQUI="$(cd "$(dirname "$0")" && pwd)"
 ASISTENTE="${ASISTENTE:-$AQUI/../05-voice/asistente.sh}"
 ARCH_RAIZ="${ARCH_RAIZ:-/data/local/arch}"
+# El su de verdad. KernelSU (y GhostLock) atrapan esta ruta aunque el archivo no
+# exista, y Magisk también la usa; el `su` de Termux no la encuentra.
+SU="${SU:-/system/bin/su}"
 
 # Completar con lo que diga `su -c getevent -l` al tocar cada cosa.
 SLIDER="${SLIDER:-CODIGO_SLIDER}"
@@ -33,7 +36,7 @@ TECLADO="wvkbd-mobintl"
 
 # swaymsg desde afuera de Arch: se busca el socket de Sway en el /tmp del chroot.
 sway() {
-  su -c "
+  "$SU" -c "
     sock=\$(ls $ARCH_RAIZ/tmp/runtime-*/sway-ipc.*.sock 2>/dev/null | head -n1)
     [ -n \"\$sock\" ] && chroot $ARCH_RAIZ /usr/bin/swaymsg -s \"\${sock#$ARCH_RAIZ}\" $*
   " >/dev/null || true
@@ -43,7 +46,7 @@ sway() {
 teclado() {
   local senal=USR1
   [ "$1" = mostrar ] && senal=USR2
-  su -c "pkill -$senal -x $TECLADO" 2>/dev/null || true
+  "$SU" -c "pkill -$senal -x $TECLADO" 2>/dev/null || true
 }
 
 voz() { "$ASISTENTE" >/dev/null 2>&1 & }
@@ -85,7 +88,7 @@ slider() {
 }
 
 # Líneas de getevent -lq:  /dev/input/event3: EV_KEY  KEY_F13  DOWN
-su -c "getevent -lq" | while read -r _ _ codigo valor; do
+"$SU" -c "getevent -lq" | while read -r _ _ codigo valor; do
   case "$valor" in
     DOWN|00000001) estado=1 ;;
     UP|00000000)   estado=0 ;;
