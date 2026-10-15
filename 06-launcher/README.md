@@ -6,14 +6,16 @@ Usarlo unos días es la mejor forma de descubrir qué tiene que tener la "cabina
 
 ## Tema Arcano
 
-[`arcano.kvtheme`](arcano.kvtheme): la paleta del proyecto (violeta oscuro, violeta y dorado) como tema de Kvaesitso. Es oscuro siempre, de día y de noche.
+[`arcano.kvtheme`](arcano.kvtheme): grimorio de cuero negro con letras doradas. El dorado es lo principal y el violeta queda profundo y apagado, para detalles. Es oscuro siempre, de día y de noche.
 
 | Rol | Color |
 |---|---|
-| Fondo | `#13101A` |
-| Acento | `#9B6BFF` |
-| Detalles | `#E8C15A` |
-| Texto | `#E4DFF0` |
+| Fondo | `#0F0D14` |
+| Principal (botones, lo activo) | `#E8C15A` |
+| Detalles | `#7B5FB8` |
+| Texto | `#E6E1EC` |
+
+(La primera versión tenía el violeta claro `#9B6BFF` en los botones grandes y quedaba muy pastel.)
 
 Para cargarlo, desde Termux:
 
