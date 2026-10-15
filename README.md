@@ -332,7 +332,7 @@ Android para jugar, Arch para trabajar.
 
 ## 📄 Licencia
 
-_A definir._
+[MIT](LICENSE), igual que sway-deere.
 
 ---
 
