@@ -54,7 +54,7 @@ uname -r
 | `6.6.92-android15-8-g3637f4904cf5-ab13944661-4k` | Red Magic 10 Pro (firmware 11.x) |
 | `6.6.30-android15-8-g54dcbfbef792-ab12368803-4k` | Red Magic Tablet 3 Pro |
 
-Este teléfono tiene kernel 6.6.30. Si la línea completa coincide con la de la Tablet 3 Pro, hay una chance real (mismo kernel genérico de Google), pero **no está probado en un RM10 Pro**. Si no coincide, la app puede sacar los datos que le faltan de una imagen `boot.img` o de un OTA (ver la [página de GhostLock en la wiki](https://github.com/mkonic/redmagic-wiki/blob/main/docs/rm10pro/ghostlock-temp-root.md)).
+**Este teléfono (10.0.9 EEA) da exactamente `6.6.30-android15-8-g54dcbfbef792-ab12368803-4k`**: la misma línea que la Tablet 3 Pro. Es el kernel genérico de Google, el mismo compilado, así que hay muy buena chance; falta confirmarlo en un RM10 Pro. Si no coincide, la app puede sacar los datos que le faltan de una imagen `boot.img` o de un OTA (ver la [página de GhostLock en la wiki](https://github.com/mkonic/redmagic-wiki/blob/main/docs/rm10pro/ghostlock-temp-root.md)).
 
 ### Uso
 
