@@ -20,6 +20,10 @@ set -euo pipefail
 ARCH_RAIZ="${ARCH_RAIZ:-/data/local/arch}"
 ARCH_URL="${ARCH_URL:-http://os.archlinuxarm.org/os/ArchLinuxARM-aarch64-latest.tar.gz}"
 ARCH_USUARIO="${ARCH_USUARIO:-gauchito}"
+# No 1000: en Android ese UID es "system", y Android le da permisos de sistema
+# a cualquier proceso con ese número. 6000-9996 no lo usa ni Android ni el
+# fabricante (las apps arrancan en 10000).
+ARCH_UID="${ARCH_UID:-7000}"
 ARCH_IDIOMA="${ARCH_IDIOMA:-es_UY.UTF-8}"
 ARCH_ZONA="${ARCH_ZONA:-America/Montevideo}"
 
@@ -65,7 +69,7 @@ como_root() {
   local linea
   linea=$(printf '%q ' env \
     "ARCH_RAIZ=$ARCH_RAIZ" "ARCH_URL=$ARCH_URL" "ARCH_USUARIO=$ARCH_USUARIO" \
-    "ARCH_IDIOMA=$ARCH_IDIOMA" "ARCH_ZONA=$ARCH_ZONA" \
+    "ARCH_UID=$ARCH_UID" "ARCH_IDIOMA=$ARCH_IDIOMA" "ARCH_ZONA=$ARCH_ZONA" \
     "COMPARTIDA_ANDROID=$COMPARTIDA_ANDROID" "TERM=${TERM:-xterm-256color}" \
     "$TERMUX_BIN/bash" "$ESTE" "$@")
   # Magisk y KernelSU entienden --mount-master; si este su no, va sin él.
@@ -228,7 +232,7 @@ configurar() {
   # La imagen trae un usuario alarm con contraseña alarm: afuera.
   en_arch bash -c 'id alarm >/dev/null 2>&1 && userdel -r alarm || true'
   if ! en_arch id "$ARCH_USUARIO" >/dev/null 2>&1; then
-    en_arch useradd -m -G wheel,aid_inet,aid_net_raw -s /bin/bash "$ARCH_USUARIO"
+    en_arch useradd -m -u "$ARCH_UID" -G wheel,aid_inet,aid_net_raw -s /bin/bash "$ARCH_USUARIO"
     avisar "Elegí una contraseña para $ARCH_USUARIO:"
     en_arch passwd "$ARCH_USUARIO"
   fi

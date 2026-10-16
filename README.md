@@ -31,7 +31,7 @@ Esto **no** es "una consola de comandos para todo". WhatsApp, la cámara, los ma
 
 ## 🚧 Estado
 
-**Diario de obra, etapa de planificación.** El teléfono todavía no llegó. Lo que hay acá es la hoja de ruta; cada sección se va a ir completando con lo que realmente funcione, y también con lo que no. Los fracasos quedan documentados: si algo me rompió el teléfono, que no te lo rompa a vos.
+**Diario de obra, con el teléfono en la mano.** Llegó el 15/10: RM10 Pro NX789J, RedMagicOS 10.0.9 EEA. Ese mismo día: actualizaciones frenadas, root temporal con GhostLock, respaldo de particiones y la primera ronda de debloat. Lo que sigue es Arch en chroot. Cada sección se va completando con lo que realmente funciona, y también con lo que no. Los fracasos quedan documentados: si algo me rompió el teléfono, que no te lo rompa a vos.
 
 ---
 

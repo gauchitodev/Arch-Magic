@@ -61,6 +61,7 @@ Por variables de entorno, sin tocar el script:
 |---|---|
 | `ARCH_RAIZ` | `/data/local/arch` |
 | `ARCH_USUARIO` | `gauchito` |
+| `ARCH_UID` | `7000` (no 1000: en Android ese número es `system`) |
 | `ARCH_IDIOMA` | `es_UY.UTF-8` |
 | `ARCH_ZONA` | `America/Montevideo` |
 | `COMPARTIDA_ANDROID` | `/sdcard/Arch-Magic` |
