@@ -8,6 +8,10 @@ Arch-Magic es la bitácora de ese capricho: una guía y un conjunto de scripts p
 
 Hecho por un operador de maquinaria agrícola que aprende a programar y que ya convirtió su laptop en una cosechadora ([sway-deere](https://github.com/gauchitodev/sway-deere)). Aquel es la cosechadora, este es la varita.
 
+![Arch Linux ARM en el RedMagic 10 Pro](capturas/fastfetch.jpg)
+
+Arch Linux ARM corriendo en el RedMagic 10 Pro (10.0.9 EEA): chroot sobre el kernel de Android, con el root temporal de GhostLock y sin desbloquear el bootloader.
+
 ---
 
 ## 🤔 ¿Para qué?
