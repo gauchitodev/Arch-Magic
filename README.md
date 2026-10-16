@@ -21,6 +21,17 @@ Para nada imprescindible. Para todo lo demás:
 | Usar el slider y los gatillos para algo más que juegos | Batería |
 | Aprender cómo funciona Android por dentro | Horas de vida, y quizás el teléfono |
 
+### ¿Qué hace Arch que no pueda hacer Android?
+
+Siendo honestos, casi todo lo de la terminal ya lo hace **Termux** solo. Lo que Termux no puede es correr programas hechos para un Linux "normal" (con glibc), porque Android es otra base. Ahí Arch sí suma:
+
+- **Claude Code nativo en el teléfono.** El instalador oficial no soporta Android; adentro de Arch se instala igual que en la PC. Probado en este RM10 Pro.
+- **Cualquier programa compilado para Linux ARM:** binarios de GitHub, lo que hay en los repos de Arch Linux ARM y el AUR, sin parches ni adaptaciones.
+- **Apps de escritorio de verdad en un monitor:** Firefox, LibreOffice y GIMP de escritorio, no sus versiones para celular, con teclado y mouse.
+- **El mismo entorno que la PC:** los mismos comandos, scripts y configuraciones que en la laptop.
+
+¿Y por qué Arch y no Debian, que haría lo mismo? Por los loles. I use Arch btw.
+
 ### Android no desaparece
 
 Esto **no** es "una consola de comandos para todo". WhatsApp, la cámara, los mapas y los juegos siguen en Android, como siempre. Arch está al lado, para cuando querés trabajar, programar o jugar a ser hacker.
