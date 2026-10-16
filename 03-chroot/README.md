@@ -2,7 +2,7 @@
 
 Arch Linux ARM corriendo sobre el kernel de Android, casi nativo y con acceso real al hardware. **Requiere root** (Etapa 2).
 
-> 🚧 Escrito antes de que llegue el teléfono. Probado en una PC (13/10) con la imagen real de Arch Linux ARM emulada con qemu, en un espacio aislado sin root: `instalar`, `configurar` (unos 3 minutos), `huella`, `entrar` y `desmontar`. `sudo` con huella se probó con PAM de verdad sobre un Arch de PC (qemu no respeta el setuid de sudo). En el RedMagic todavía no: cuando lo esté, este aviso desaparece.
+> ✅ **Probado en el teléfono (15/10/2026):** RM10 Pro, RedMagicOS 10.0.9 EEA, root de GhostLock. `instalar` (13 s, con la imagen ya bajada), `configurar` (saca kernel y firmware, Landlock no disponible → pacman sin sandbox, `-Syu` y `sudo git curl base-devel`), `entrar gauchito`, `sudo` con contraseña, y Claude Code instalado adentro con su instalador oficial (`curl -fsSL https://claude.ai/install.sh | bash`). Lo que apareció en el teléfono y no en la PC: el `mount` de Android no estaba en el PATH al pasar a root, y el usuario necesitaba un UID que no fuera 1000 (en Android es `system`). El `tar` de Termux no copia las *capabilities* de archivo: solo afecta a `newuidmap`/`newgidmap`. Falta probar en el teléfono: `huella` y `desmontar`. `entrar` muestra `tty: ttyname error`, sin consecuencias.
 
 ## Uso
 
