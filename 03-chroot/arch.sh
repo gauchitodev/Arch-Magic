@@ -199,6 +199,13 @@ configurar() {
     "$ARCH_RAIZ/usr/share/libalpm/hooks/21-systemd-tmpfiles.hook" \
     > "$ARCH_RAIZ/etc/pacman.d/hooks/21-systemd-tmpfiles.hook"
 
+  # gpm (lo trae vim) corre `tty` en cada login para ver si estamos en una
+  # consola de texto. En el chroot no la hay y tira "ttyname error". Afuera, y
+  # que pacman no lo vuelva a poner al actualizar.
+  grep -q 'etc/profile.d/gpm.sh' "$ARCH_RAIZ/etc/pacman.conf" ||
+    sed -i '/^\[options\]/a NoExtract = etc/profile.d/gpm.sh' "$ARCH_RAIZ/etc/pacman.conf"
+  rm -f "$ARCH_RAIZ/etc/profile.d/gpm.sh"
+
   # La imagen trae kernel, firmware y mkinitcpio para placas como la Raspberry.
   # Acá el kernel es el de Android: afuera, así -Syu no baja cientos de MB al
   # pedo ni arma un initramfs que nadie usa.
