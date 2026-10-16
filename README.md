@@ -46,7 +46,21 @@ Esto **no** es "una consola de comandos para todo". WhatsApp, la cámara, los ma
 
 ## 🚧 Estado
 
-**Diario de obra, con el teléfono en la mano.** Llegó el 15/10: RM10 Pro NX789J, RedMagicOS 10.0.9 EEA. Ese mismo día: actualizaciones frenadas, root temporal con GhostLock, respaldo de particiones y la primera ronda de debloat. Lo que sigue es Arch en chroot. Cada sección se va completando con lo que realmente funciona, y también con lo que no. Los fracasos quedan documentados: si algo me rompió el teléfono, que no te lo rompa a vos.
+**Diario de obra, con el teléfono en la mano.** Cada sección se va completando con lo que realmente funciona, y también con lo que no. Los fracasos quedan documentados: si algo me rompió el teléfono, que no te lo rompa a vos.
+
+**Día 1 (15/10).** Llegó el RM10 Pro NX789J, RedMagicOS 10.0.9 EEA. Actualizaciones frenadas, root temporal con GhostLock, respaldo de particiones, primera ronda de debloat y, a la noche, **Arch en chroot con Claude Code adentro**. Se entra escribiendo `arch` en Termux.
+
+**Día 2 (16/10).** Claude Code dejó de estar encerrado en la terminal:
+
+| | Estado |
+|---|---|
+| ADB contra el propio teléfono, sin root ([`adb-local.sh`](04-input/adb-local.sh)) | ✅ Claude ve la pantalla (capturas), toca, desliza y cambia de sesión en Termux |
+| Ventilador desde la consola ([`ventilador.sh`](04-input/ventilador.sh)) | ✅ Prender, apagar, modo fuerte y un `auto` que lo prende al pasar 40 °C de piel |
+| Carpeta compartida Android ↔ Arch (`/sdcard/Arch-Magic` ↔ `/mnt/android`) | ✅ Lee y escribe en las dos direcciones |
+| Slider → teclado | ⏸️ El slider se lee bien, pero RedMagic lo usa para abrir el Game Space y te saca de la app. Sin opción para apagarlo: queda para cuando haya root |
+| Gatillos | ⏸️ No mandan nada fuera del modo juego |
+
+Tropiezos del día, por si te pasan: la **Barra lateral Z-Smart** de ZTE se abre con el mismo deslizamiento que el panel de sesiones de Termux (apagarla: buscar "Z-Smart" en Ajustes), y **Gboard** a veces deja de mandar el Enter en Termux (en prueba: `enforce-char-based-input = true` en `~/.termux/termux.properties`).
 
 ---
 
@@ -116,7 +130,7 @@ Las etapas 1 a 3 son la base: meter Arch en el teléfono. Las **4 a 6 son la mag
 | 1 | `01-debloat/` | ❌ | Sacar basura de fábrica por ADB |
 | 2 | `02-root/` | — | Frenar actualizaciones, root temporal (GhostLock), respaldo y unlock |
 | 3 | `03-chroot/` | ✅ | Arch Linux en chroot (o proot sin root) + Claude Code |
-| 4 | `04-input/` | ✅ | Slider → teclado, gatillos → pantallas y voz, teclado BT |
+| 4 | `04-input/` | ½ | Ventilador y ADB local (sin root); slider → teclado, gatillos → pantallas y voz, teclado BT (con root) |
 | 5 | `05-voice/` | ❌ | Asistente de voz: Whisper + Claude + TTS |
 | 6 | `06-launcher/` | ❌ | Launcher propio que reemplaza al de RedMagic |
 | — | `termux/` | ❌ | Configuración de Termux, tmux y paleta |
@@ -182,13 +196,25 @@ claude --version
 
 ### Etapa 4 — Entradas físicas
 
-Descubrir qué evento manda cada botón:
+Descubrir qué evento manda cada botón. Con root, `su -c getevent -l`; **sin root alcanza con ADB** (el usuario `shell` está en el grupo `input`):
 
 ```bash
-su -c getevent -l
+04-input/adb-local.sh conectar
+adb shell getevent -lt
 ```
 
-Demonio en [`04-input/entradas.sh`](04-input/entradas.sh):
+Lo que se vio en el NX789J:
+
+| Entrada | Dispositivo | Evento |
+|---|---|---|
+| Slider | `gpio-keys_nubia` | `EV_SW SW_PEN_INSERTED` (1 afuera, 0 adentro) |
+| Gatillos | `nubia_tgk_aw_sar0_ch0` / `sar1` | Nada fuera del modo juego: son capacitivos |
+
+> ⚠️ Al sacar el slider, RedMagic cambia el launcher por el del Game Space y te manda al inicio. No hay opción en Ajustes ni en el Game Space para evitarlo (la de "estado después de desactivar la tecla competitiva" solo decide qué pasa al meterlo). Con root se puede cortar de raíz; sin root, lo único es volver a la app después, y queda un parpadeo feo.
+
+**Ventilador** ([`04-input/ventilador.sh`](04-input/ventilador.sh), por ADB): el botón de los ajustes rápidos no habla con el kernel, cambia ajustes de Android que la app del ventilador pasa a `/sys/kernel/fan`. `fan_state_of_manual` (2 prende, -2 apaga) y `fan_state_of_mode` (1 normal ~8.400 RPM, 0 fuerte ~16.400 RPM). Con `ventilador.sh arrancar` en el `.bashrc` de Termux queda un `auto` de fondo que lo prende solo con calor.
+
+Demonio pensado para cuando haya root, en [`04-input/entradas.sh`](04-input/entradas.sh):
 
 | Entrada | Acción |
 |---|---|
