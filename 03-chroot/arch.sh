@@ -31,6 +31,13 @@ ARCH_ZONA="${ARCH_ZONA:-America/Montevideo}"
 # desde Arch, así Claude Code no tiene cómo tocar las fotos ni los datos.
 COMPARTIDA_ANDROID="${COMPARTIDA_ANDROID:-/sdcard/Arch-Magic}"
 COMPARTIDA_ARCH="/mnt/android"
+# /sdcard es un FUSE de Android (MediaProvider) que solo atiende a apps: al
+# usuario de Arch le contesta "Dirección incorrecta". Se monta lo de abajo,
+# /data/media/0, que es la misma carpeta sin el FUSE.
+COMPARTIDA_DEBAJO="${COMPARTIDA_ANDROID/#\/sdcard\//\/data\/media\/0\/}"
+# Android guarda /data/media con el grupo media_rw (AID_MEDIA_RW) y setgid:
+# tu usuario de Arch entra a la carpeta compartida por ese grupo.
+GID_MEDIA_RW=1023
 
 # Este repo, visto desde adentro de Arch: así Sway y compañía usan los mismos
 # scripts que Termux, sin clonar dos veces.
@@ -139,8 +146,9 @@ montar_todo() {
     montar "$ARCH_RAIZ/tmp/.X11-unix" --bind "$x11"
   fi
 
+  # Se crea por /sdcard, así Android la registra como suya; se monta la de abajo.
   mkdir -p "$COMPARTIDA_ANDROID"
-  montar "$ARCH_RAIZ$COMPARTIDA_ARCH" --bind "$COMPARTIDA_ANDROID"
+  montar "$ARCH_RAIZ$COMPARTIDA_ARCH" --bind "$COMPARTIDA_DEBAJO"
   # El repo es del usuario de Termux. Tu usuario de Arch lo tiene que poder leer
   # (no escribir): no se le da el mismo número de usuario que a Termux porque
   # entonces podría meterse en la carpeta del socket de la huella.
@@ -185,6 +193,7 @@ configurar() {
     getent passwd alpm >/dev/null && usermod -aG aid_inet,aid_net_raw alpm
     usermod -aG aid_inet,aid_net_raw root
   '
+  en_arch bash -c "getent group $GID_MEDIA_RW >/dev/null || groupadd -g $GID_MEDIA_RW media_rw"
 
   decir "Llaves de pacman y actualización…"
   en_arch pacman-key --init
@@ -245,6 +254,10 @@ configurar() {
     avisar "Elegí una contraseña para $ARCH_USUARIO:"
     en_arch passwd "$ARCH_USUARIO"
   fi
+  en_arch usermod -aG media_rw "$ARCH_USUARIO"
+  # Que lo que crees en /mnt/android lo pueda tocar también Android (mismo grupo).
+  grep -qx 'umask 002' "$ARCH_RAIZ/home/$ARCH_USUARIO/.bashrc" 2>/dev/null ||
+    echo 'umask 002' >> "$ARCH_RAIZ/home/$ARCH_USUARIO/.bashrc"
   echo '%wheel ALL=(ALL:ALL) ALL' > "$ARCH_RAIZ/etc/sudoers.d/wheel"
   chmod 440 "$ARCH_RAIZ/etc/sudoers.d/wheel"
 
