@@ -64,13 +64,15 @@ morir() { printf '%s✗%s %s\n' "$rojo" "$normal" "$*" >&2; exit 1; }
 # Si no somos root, volver a llamarnos con su. --mount-master hace que los
 # montajes queden en el espacio de nombres global y no se pierdan al salir.
 como_root() {
-  [ "$(id -u)" = 0 ] && return
+  # mount y umount son de Android (/system/bin): el PATH de Termux no los tiene.
+  [ "$(id -u)" = 0 ] && { PATH="$PATH:/system/bin:/system/xbin"; return; }
   "$SU" -c true >/dev/null 2>&1 || morir "No hay su. ¿El teléfono tiene root?"
   local linea
   linea=$(printf '%q ' env \
     "ARCH_RAIZ=$ARCH_RAIZ" "ARCH_URL=$ARCH_URL" "ARCH_USUARIO=$ARCH_USUARIO" \
     "ARCH_UID=$ARCH_UID" "ARCH_IDIOMA=$ARCH_IDIOMA" "ARCH_ZONA=$ARCH_ZONA" \
     "COMPARTIDA_ANDROID=$COMPARTIDA_ANDROID" "TERM=${TERM:-xterm-256color}" \
+    "PATH=$TERMUX_BIN:/system/bin:/system/xbin" \
     "$TERMUX_BIN/bash" "$ESTE" "$@")
   # Magisk y KernelSU entienden --mount-master; si este su no, va sin él.
   if "$SU" --mount-master -c true >/dev/null 2>&1; then
