@@ -23,6 +23,12 @@
 
 set -euo pipefail
 
+# El servidor de ADB escucha en un socket de archivo dentro de ~/.android (700),
+# no en el puerto 5037: ese puerto no pide llave, y cualquier app del teléfono
+# que se conectara ahí manejaría el teléfono entero. Así lo usa solo su dueño.
+mkdir -p "$HOME/.android" && chmod 700 "$HOME/.android"
+export ADB_SERVER_SOCKET="${ADB_SERVER_SOCKET:-localfilesystem:$HOME/.android/adb-server.sock}"
+
 ADB_DESTINO="${ADB_DESTINO:-127.0.0.1:5555}"
 FAN=/sys/kernel/fan
 # Dónde deja su número y su registro el `auto` de fondo.
