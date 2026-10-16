@@ -116,31 +116,17 @@ Las etapas 1 a 3 son la base: meter Arch en el teléfono. Las **4 a 6 son la mag
 3. **Desactivar el actualizador** sin entrar a la pantalla de actualizaciones: ver [`02-root/`](02-root/#paso-0--frenar-las-actualizaciones-hoy).
 4. No configurar cuentas ni cargar datos (el unlock va a borrar todo).
 
-### Etapa 1 — Debloat (sin root)
+### Etapa 1 — Debloat
 
-Activar opciones de desarrollador (7 toques en "Número de compilación") → **Depuración USB**.
-
-Desde la PC:
+Sacar las apps de fábrica que sobran, de forma reversible (`pm uninstall --user 0`). Con root:
 
 ```bash
-sudo pacman -S android-tools
-adb devices
-adb shell pm list packages | grep -iE "nubia|redmagic|zte|facebook|game"
+01-debloat/debloat.sh listar      # qué trae de fábrica
+01-debloat/debloat.sh sacar       # saca lo de sacar.txt, pidiendo confirmación
+01-debloat/debloat.sh restaurar   # vuelve todo atrás
 ```
 
-Quitar un paquete (reversible):
-
-```bash
-adb shell pm uninstall --user 0 nombre.del.paquete
-```
-
-Restaurarlo:
-
-```bash
-adb shell cmd package install-existing nombre.del.paquete
-```
-
-> ⚠️ No quitar lo que maneja el ventilador ni el rendimiento. Lista de paquetes seguros: _a completar_.
+> ⚠️ No sacar lo que maneja el ventilador, el rendimiento, los gatillos o el slider. Detalles y la versión sin root en [`01-debloat/`](01-debloat/).
 
 ### Etapa 2 — Bootloader y root
 
